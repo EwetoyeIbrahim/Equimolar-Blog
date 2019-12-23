@@ -1,0 +1,9 @@
+<div class=pagination>
+  {% if pagination.has_prev -%}
+    <a href="">&laquo; Previous</a>
+  {%- endif %}{#
+  #} — <strong>{{ pagination.page }}</strong> — {#
+  #}{% if pagination.has_next -%}
+    <a href="">Next &raquo;</a>
+  {%- endif %}
+</div>

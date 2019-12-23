@@ -1,0 +1,182 @@
+from datetime import datetime
+import json
+
+from flask import render_template, request, abort, redirect, url_for, flash
+from werkzeug.urls import url_parse
+from slugify import slugify
+from flask_security import Security, SQLAlchemyUserDatastore, \
+    utils, login_required, login_user, logout_user, current_user
+from flask_admin import Admin
+from markdown import markdown
+
+from . import app
+from .models import Article, Tag, db, User, Role
+from .forms import ArticleForm, LoginForm, RegistrationForm
+
+# ----------- Initializations----------------------------------
+# Initialize the SQLAlchemy data store.
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+# Initialize Flask-Security.
+security = Security(app, user_datastore)
+# Initialize Flask-Admin.
+admin = Admin(app)
+
+# ------- Setting up some dummy data for testing purpose ---
+''' Note that this section must be deleted before moving into
+a production environment, They are just here for testing purpose
+'''
+# Executes before the first request is processed.
+@app.before_first_request
+def before_first_request():
+    '''
+    Before doing anything, We have to make sure that our database is set
+    Note, a blank database must exist before running, but if its an sqlite database
+    it will be created on the fly if it does not exist.
+    After creating all the tables, we will be setting up two stuffs:
+    First we will create the roles:
+    Four roles are provided here:
+    Name        |       Description
+    ________________________________
+    Authour     |   Write and Edit own posts 
+    Editor      |   Edit all posts (Post Table)
+    Registrar   |   Create and Delete users (User Table)
+    
+    Some dummy users will be created and assigned roles: The names and roles
+    of the dummy users are as stated above, i.e,
+    Authour is assigned username='Authour', email='author@example.com', and
+    password='password'
+    '''
+
+    # Create any database tables that don't exist yet.
+    db.create_all()
+
+    # Create the Roles
+    user_datastore.find_or_create_role(name='Authour',description='Write and Edit own posts')
+    user_datastore.find_or_create_role(name='Editor', description='Edit all posts')
+    user_datastore.find_or_create_role(name='Registrar', description='Create and Delete users')
+    
+    
+    #--- Delete this section before going public !!!
+    # Create four Users for testing purposes -- unless they already exists.
+    # In each case, use Flask-Security utility function to encrypt the password.
+    default_users = {
+        'Authour User':['authour@example.com', 'password', 'Authour'],
+        'Editor User':['editor@example.com', 'password', 'Editor'],
+        'Registrar User':['registrar@example.com', 'password', 'Registrar'],
+        'Owner User':['owner@example.com', 'password', 'Registrar', 'Editor', 'Authour'],
+    }
+    for username, detail in default_users.items():
+        
+        if not user_datastore.get_user(detail[0]):
+            user_datastore.create_user(username=username, email=detail[0],
+                                       password=utils.encrypt_password(detail[1]),)
+        # Assign roles to this user
+        for i in detail[2:]:
+            user_datastore.add_role_to_user(detail[0], i )
+    # Save details to database
+    db.session.commit()
+# ------- End of dummy data for set-up ------------------------------
+# -------- The Endpoints --------------------------------------------
+@app.errorhandler(404)
+def page_not_found(error):
+    title = str(error)
+    message = error.description
+    return render_template('errors.html',
+                           title=title,
+                           message=message)
+
+@app.errorhandler(500)
+def internal_server_error(error):
+    title = error
+    message = error.description
+    return render_template('errors.html',
+                           title=title,
+                           message=message)
+
+@app.route('/')
+def index():
+    pagination = Article.query.order_by(Article.last_modified_date.desc()).paginate(1)
+    return render_template('index.html',
+                           pagination=pagination)
+
+@app.route('/register/', methods=['GET', 'POST'])
+@login_required
+def register():
+    if current_user.has_role('Registrar'):
+        form = RegistrationForm()
+        if form.validate_on_submit():
+            user = User(username=form.username.data, email=form.email.data)
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash('Congratulations, you have created a new registered user!')
+            return redirect(url_for('index'))
+        return render_template('register.html', title='Register', form=form)
+    flash('''Sorry, only users that has been given the Registrar role 
+          can register a new user, Kindly contact Ewetoye Ibrahim for
+          rectification. You have been logged-out!!!.''', 'error')
+    logout_user()
+    return redirect(url_for('register'))
+
+@app.route('/logout/')
+def logout():
+    logout_user()
+    return redirect('/')
+
+@app.route('/<slug>')
+def show_article_post(slug):
+    '''
+    Renders article with the based on the slug.
+    Note: All articles are stored in Markdown syntax, thus, 
+    they must be converted html before rendering
+    '''
+    article = Article.query.filter_by(slug=slug).first()
+    if article==None:
+        abort(404)
+    article.content = markdown(article.content)
+    # Getting the related articles based on tags,
+    tag_names = [x.name for x in article.tags]
+    related_articles = Article.query.filter(
+                        Article.tags.any(Tag.name.in_(tag_names))).order_by(
+                        Article.last_modified_date.desc()).all()  
+    return render_template('post_slug.html',
+                           article = article,
+                           related_articles = related_articles)
+
+@app.route('/tags')
+def show_tags():
+    # Displays all available tags
+    tags = Tag.query.all()
+    return render_template('tags.html',
+                           tags=tags)
+
+@app.route('/tag/<id>')
+def show_tag(id):
+    # Given a tag, all associated posts are displayed
+    tag = Tag.query.get_or_404(id)
+    articles = tag.articles.all()
+    return render_template('tag.html', tag=tag, entries=articles)
+
+@app.route('/writter', methods=['GET', 'POST'])
+def writter():
+    form = ArticleForm()
+    if request.method == 'POST':
+        if form.slug.data:
+            slug = slugify(form.slug.data)
+        else:
+            slug = slugify(form.title.data)
+        print(Article.draft, Article.title)
+        article = Article(
+            title=form.title.data,
+            slug=slug,
+            summary=form.summary.data,
+            content=form.content.data,
+            last_modified_date=form.last_modified_date.data,
+        )
+        article_tag = [Tag(name=x.strip()) for x in form.tags.data.split(',')]
+        article.tags.extend(article_tag)
+        db.session.add(article)
+        db.session.commit()
+        flash('Congratulations, your post was succesufully submitted')
+        return redirect(url_for('show_article_post(slug)'))
+    return render_template('writter.html', form=form)

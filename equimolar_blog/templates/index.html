@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{ config.SITE_NAME }}
+{% endblock %}
+{% block main %}
+
+    {%- for entry in pagination.items %}
+        <div class=entry-overview>
+            
+            <div class=detail>
+                <h1><a href='/{{ entry.slug }}'>{{ entry.title }}</a></h1>
+                {% if entry.summary %}
+                    <p>{{ entry.summary }} 
+                        | Last Modified: {{ blog_date(entry.last_modified_date) }}
+                    </p>
+                {% endif %}
+                
+            </div>
+        </div>
+        <hr>
+    {%- endfor %}
+
+    {% include '_pagination.html' %}
+
+{% endblock %}

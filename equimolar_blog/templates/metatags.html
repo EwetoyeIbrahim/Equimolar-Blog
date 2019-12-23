@@ -1,0 +1,21 @@
+<meta name="author" content="{{ article.authour.first().username }}">
+<meta name="keywords" content="
+    {% if config.SITE_KEYWORDS %}
+        {% for keyword in config.SITE_KEYWORDS -%}
+            {{ keyword }},
+        {%- endfor %}
+    {% endif %}
+    {% for tag in article.tags -%}
+        {{ tag.name | lower }}{{ ', ' if not loop.last }}
+    {%- endfor %}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ article.title }}">
+{% if article.summary %}
+    <meta name="description" content="{{ article.summary }}">
+    <meta property="og:description" content="{{ article.summary }}">
+{% endif %}
+<meta property="og:updated_time" content="{{ article.last_modified_date }}">
+<meta property="og:url" content="{{ request.url }}">
+<meta property="og:site_name" content="{{ config.SITENAME or 'Equimolar'}}">
+<meta property="article:section" content="{{ article.tags[0] | title }}">
+<meta property="article:modified_time" content="{{ article.last_modified_date }}">

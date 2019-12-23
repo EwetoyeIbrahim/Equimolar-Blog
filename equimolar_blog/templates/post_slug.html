@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block meta %}
+    {% include "metatags.html" %}
+{% endblock meta %}
+{% block title %}
+    {{ article.title }}
+{% endblock %}
+{% block main %}
+    <h1>{{ article.title }}<br><small>{{ article.summary }}</small></h1>
+    <hr>
+    {{ article.content|safe }}
+
+    {% if article.last_modified_date %}
+        <p>
+            Last modified on {{ blog_date(article.last_modified_date) }} by 
+            {{ article.authour.first().username }}
+        </p>
+    {% endif %}
+    {% if article.tags %}
+        {% for tag in article.tags %}
+            <button class="btn btn-dark mt-2"><a href="/tag/{{ tag.id }}">
+                <span class="row h-100 align-items-center px-2">
+                    <i class="material-icons">local_offer</i>
+                    {{ tag.name }}
+                </span></a>
+            </button>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}
+{% block sidebar %}
+    {% if related_articles %}
+        <p>Related Posts</p>
+        {% for related in related_articles %}
+            <li><a href="/{{ related.slug }}">{{ related.title }}</a></li>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

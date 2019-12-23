@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Entries tagged “{{ tag.name }}”{% endblock %}
+{% block main %}
+  <h1>Entries <a href="">tagged</a> “{{ tag.name }}”</h1>
+  <ul>
+  {%- for entry in entries %}
+    <li>
+      <a href="/{{ entry.slug }}">{{ entry.title }}</a>
+      written on {{ blog_date(entry.last_modified_date) }}
+    </li>
+  {%- endfor %}
+  </ul>
+{% endblock %}
