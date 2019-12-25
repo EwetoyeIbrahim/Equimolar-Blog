@@ -184,7 +184,7 @@ def writter():
         article_ = Article.query.filter(Article.id==article_id).first()
         editable = True
         if article_:
-            editable = can_edit(current_user, article_.authour)
+            editable = can_edit(current_user, article_.authour.first().username)
 
         if editable:     
             if request.method == 'POST':
