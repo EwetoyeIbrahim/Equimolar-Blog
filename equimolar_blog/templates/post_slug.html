@@ -7,12 +7,14 @@
 {% endblock %}
 {% block main %}
     <h1>{{ article.title }}<br><small>{{ article.summary }}</small></h1>
+    <button><a href="{{ url_for('writter', article_id=article.id) }}">Edit this article</a></button>
+    {% endif %}
     <hr>
     {{ article.content|safe }}
 
-    {% if article.last_modified_date %}
+    {% if article.last_mod_date %}
         <p>
-            Last modified on {{ blog_date(article.last_modified_date) }} by 
+            Last modified on {{ blog_date(article.last_mod_date) }} by 
             {{ article.authour.first().username }}
         </p>
     {% endif %}

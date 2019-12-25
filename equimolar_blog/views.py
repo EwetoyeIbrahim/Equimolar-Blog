@@ -1,18 +1,18 @@
 from datetime import datetime
 import json
 
-from flask import render_template, request, abort, redirect, url_for, flash
+from flask import render_template, request, abort, redirect, \
+    url_for, flash
 from werkzeug.urls import url_parse
-from slugify import slugify
 from flask_security import Security, SQLAlchemyUserDatastore, \
     utils, login_required, login_user, logout_user, current_user
 from flask_admin import Admin
 from markdown import markdown
 
 from . import app
-from .models import Article, Tag, db, User, Role
+from .models import Article, Tag, db, User, Role, articles_tags
 from .forms import ArticleForm, LoginForm, RegistrationForm
-
+from .utilities import split_article, update_article
 # ----------- Initializations----------------------------------
 # Initialize the SQLAlchemy data store.
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -76,14 +76,16 @@ def before_first_request():
     # Save details to database
     db.session.commit()
 # ------- End of dummy data for set-up ------------------------------
-# -------- The Endpoints --------------------------------------------
+
+# -------- Error Handlers --------------------------------------------
+
 @app.errorhandler(404)
 def page_not_found(error):
     title = str(error)
     message = error.description
     return render_template('errors.html',
                            title=title,
-                           message=message)
+                           message=message),404
 
 @app.errorhandler(500)
 def internal_server_error(error):
@@ -91,11 +93,12 @@ def internal_server_error(error):
     message = error.description
     return render_template('errors.html',
                            title=title,
-                           message=message)
+                           message=message),500
 
+# -------- Endpoints -------------------------------------------------
 @app.route('/')
 def index():
-    pagination = Article.query.order_by(Article.last_modified_date.desc()).paginate(1)
+    pagination = Article.query.order_by(Article.last_mod_date.desc()).paginate(1)
     return render_template('index.html',
                            pagination=pagination)
 
@@ -126,7 +129,9 @@ def logout():
 @app.route('/<slug>')
 def show_article_post(slug):
     '''
-    Renders article with the based on the slug.
+    Renders article with the related articles.
+    Articles are based on slug, while#
+    related articles are based on tags.
     Note: All articles are stored in Markdown syntax, thus, 
     they must be converted html before rendering
     '''
@@ -138,7 +143,7 @@ def show_article_post(slug):
     tag_names = [x.name for x in article.tags]
     related_articles = Article.query.filter(
                         Article.tags.any(Tag.name.in_(tag_names))).order_by(
-                        Article.last_modified_date.desc()).all()  
+                        Article.last_mod_date.desc()).all()  
     return render_template('post_slug.html',
                            article = article,
                            related_articles = related_articles)
@@ -157,26 +162,62 @@ def show_tag(id):
     articles = tag.articles.all()
     return render_template('tag.html', tag=tag, entries=articles)
 
-@app.route('/writter', methods=['GET', 'POST'])
+
+@app.route('/writter/', methods=['GET', 'POST'])
+@login_required
 def writter():
-    form = ArticleForm()
-    if request.method == 'POST':
-        if form.slug.data:
-            slug = slugify(form.slug.data)
+    '''
+    View for writing and editing articles/posts.
+    By mere hitting this endpoint, a logged-in user with aurthour rigth
+    will be presented a blank form to write a new article.
+    If the query of article_id(id of a specific post) is provided, typically by
+    clicking on edit this post button which is only visible if the user is
+    logged in and posses an authour right, the user is presented a form
+    with the provided article_id information for editing.
+    
+    :param article_id: An optional query for editing an already published post
+    :type article_id: str
+    '''
+    if (current_user.has_role('Authour') or current_user.has_role('Editor')) :
+        article_id = request.args.get('article_id',None)
+        form = ArticleForm()
+        article_ = Article.query.filter(Article.id==article_id).first()
+        if request.method == 'POST':
+            usname = User.query.filter_by(username=current_user.username)
+            if article_:
+                print('I have Id')
+                article = update_article(form, article_, usname)
+                #db.session.delete(g.article_)
+            else:
+                article = Article(
+                    title=form.title.data,
+                    slug=form.slug.data,
+                    summary=form.summary.data,
+                    content=form.content.data,
+                    last_mod_date=form.last_mod_date.data,
+                    authour=usname,
+                )
+            list_tags = [x.strip() for x in form.tags.data.split(',')]
+            
+            for x in list_tags:                                             
+                new_tag = Tag.query.filter(Tag.name==x).first()
+                if new_tag is None:
+                    new_tag = Tag(name=x)
+                    db.session.add(new_tag)
+                article.tags.append(new_tag)
+            db.session.commit()
+
+            flash('Congratulations, your post was succesufully submitted')
+            return redirect(f'/{article.slug}')
+
         else:
-            slug = slugify(form.title.data)
-        print(Article.draft, Article.title)
-        article = Article(
-            title=form.title.data,
-            slug=slug,
-            summary=form.summary.data,
-            content=form.content.data,
-            last_modified_date=form.last_modified_date.data,
-        )
-        article_tag = [Tag(name=x.strip()) for x in form.tags.data.split(',')]
-        article.tags.extend(article_tag)
-        db.session.add(article)
-        db.session.commit()
-        flash('Congratulations, your post was succesufully submitted')
-        return redirect(url_for('show_article_post(slug)'))
-    return render_template('writter.html', form=form)
+            if article_:
+                #g.article_ = article_
+                form = split_article(article_, form)
+            return render_template('writter.html', form=form, article_id=article_id)
+    
+    flash('''Sorry, only users that has been given either Authour or Editor
+            permissions can create or edit a post, Kindly contact Ewetoye Ibrahim for
+            rectification. You have been logged-out!!!.''', 'error')
+    logout_user()
+    return redirect(url_for('register'))

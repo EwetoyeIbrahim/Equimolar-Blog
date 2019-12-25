@@ -11,7 +11,7 @@ class ArticleForm(FlaskForm):
     slug = StringField('slug', validators=[Length(max=100),],)
     summary = StringField('summary', validators=[Length(max=100),],)
     content = TextAreaField('content', validators=[DataRequired(),],)
-    last_modified_date = DateField('PublishDate', validators=[DataRequired(),],
+    last_mod_date = DateField('PublishDate', validators=[DataRequired(),],
         default=datetime.date(datetime.utcnow()))
     tags = StringField('tags', validators=[DataRequired()])
     draft = BooleanField('draft', default=False)

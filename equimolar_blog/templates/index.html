@@ -11,7 +11,7 @@
                 <h1><a href='/{{ entry.slug }}'>{{ entry.title }}</a></h1>
                 {% if entry.summary %}
                     <p>{{ entry.summary }} 
-                        | Last Modified: {{ blog_date(entry.last_modified_date) }}
+                        | Last Modified: {{ blog_date(entry.last_mod_date) }}
                     </p>
                 {% endif %}
                 

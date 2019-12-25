@@ -3,7 +3,7 @@
     Create a new blog post
 {% endblock title %}
 {% block main %}
-    <form class="needs-validation" action="{{ url_for('creator') }}" method="post">
+    <form class="needs-validation" action="{{ url_for('writter', article_id=article_id or None) }}" method="post">
         {{ form.hidden_tag() }}
         <div class="form-row">
             <label for="validationCustom01">Title</label>
@@ -45,8 +45,8 @@
                             <i class="material-icons">date_range</i>
                         </span>
                     </div>
-                    {{ form.pub_time(id="pub_time", 
-                        class="form-control", **{'aria-describedby':"inputGroupPrepend"},) }}
+                    {{ form.last_mod_date(class="form-control",
+                        **{'aria-describedby':"inputGroupPrepend"},) }}
                 </div>
             </div>
             <div class="col-12 mt-3">

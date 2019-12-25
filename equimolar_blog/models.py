@@ -27,7 +27,7 @@ class Article(db.Model):
     slug    |   A valid slug to access the post, if 
     summary |   A 1-2 line caption of the post
     content |   The full content written in markdown
-    last_modified_date|   Post publication time
+    last_mod_date|   Post publication time
     draft   |   Flag to make the post not accessible
     tags    |   Tags on the post
     authour |   Autoregistered based on the post creator
@@ -41,7 +41,7 @@ class Article(db.Model):
     slug = db.Column(db.String(150))
     summary = db.Column(db.String(300))
     content = db.Column(db.Text, nullable=False)
-    last_modified_date = db.Column(db.DateTime, default=datetime.date(datetime.utcnow()))
+    last_mod_date = db.Column(db.DateTime, default=datetime.date(datetime.utcnow()))
     draft = db.Column(db.Boolean, default=0)
     tags = db.relationship('Tag', secondary=articles_tags,
                            backref=db.backref('articles', lazy='dynamic'))
@@ -50,24 +50,24 @@ class Article(db.Model):
     def __repr__(self):
         return '<Article {}>'.format(self.title)
     
-    def __init__(self, title, summary, content, draft=False, last_modified_date=None, 
-                 slug=None, authour=None):
+    def __init__(self, title, summary, content, id=None,
+                draft=False, last_mod_date=None,
+                slug=None, authour=None):
+        if id:
+            self.id=id
         self.title = title
         self.summary = summary
         self.content = content
         self.draft = draft
         self.authour = authour
-        if last_modified_date:
+        if last_mod_date:
             # Use the given date and time instead of todays's date
-            self.last_modified_date = last_modified_date
-        if slug is None:
+            self.last_mod_date = last_mod_date
+        if slug:
+            self.slug = slugify(slug)
+        else:
             # generate slug from the title if slug is not stated
             self.slug = slugify(self.title)
-        else:
-            assert(slugify(slug)==slug,
-                'This should never occur, as the form field only accepts slug'
-                )
-            self.slug = slug
 
 
     def save(self):
