@@ -7,7 +7,11 @@
 {% endblock %}
 {% block main %}
     <h1>{{ article.title }}<br><small>{{ article.summary }}</small></h1>
-    <button><a href="{{ url_for('writter', article_id=article.id) }}">Edit this article</a></button>
+    {% if can_edit(current_user, article.authour.first().username) %}
+    <button>
+        <a href="{{ url_for('writter', article_id=article.id) }}">
+        Edit this article</a>
+    </button>
     {% endif %}
     <hr>
     {{ article.content|safe }}

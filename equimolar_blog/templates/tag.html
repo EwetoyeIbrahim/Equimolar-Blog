@@ -6,7 +6,7 @@
   {%- for entry in entries %}
     <li>
       <a href="/{{ entry.slug }}">{{ entry.title }}</a>
-      written on {{ blog_date(entry.last_modified_date) }}
+      written on {{ blog_date(entry.last_mod_date) }}
     </li>
   {%- endfor %}
   </ul>

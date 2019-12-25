@@ -30,8 +30,26 @@ def update_article(form, article, username):
     article.tags=[]
     return article
 
-
+def can_edit(current_user, authour):
+    '''
+    Checks if a post is editable, returns True if either the
+    accessing user is the authour of the post or is an Editor,
+    It is also made a global jinja function as it is also used to
+    determine if an Edit button should be visible to the web user.
+    :param current_user: Flask-Security extended Flask-Login current
+                         user object
+    :type current_user: object
+    param authour: The authour of the given article
+    :type authour: str
+    '''
+    if current_user.is_authenticated:
+        if current_user.has_role('Editor'):
+            return True
+        if authour==current_user.username:
+            return True
+    return False
 
 
 
 app.jinja_env.globals['blog_date'] = blog_date
+app.jinja_env.globals['can_edit'] = can_edit

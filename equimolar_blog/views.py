@@ -12,7 +12,7 @@ from markdown import markdown
 from . import app
 from .models import Article, Tag, db, User, Role, articles_tags
 from .forms import ArticleForm, LoginForm, RegistrationForm
-from .utilities import split_article, update_article
+from .utilities import split_article, update_article, can_edit
 # ----------- Initializations----------------------------------
 # Initialize the SQLAlchemy data store.
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
@@ -182,42 +182,52 @@ def writter():
         article_id = request.args.get('article_id',None)
         form = ArticleForm()
         article_ = Article.query.filter(Article.id==article_id).first()
-        if request.method == 'POST':
-            usname = User.query.filter_by(username=current_user.username)
-            if article_:
-                print('I have Id')
-                article = update_article(form, article_, usname)
-                #db.session.delete(g.article_)
+        editable = True
+        if article_:
+            editable = can_edit(current_user, article_.authour)
+
+        if editable:     
+            if request.method == 'POST':
+                usname = User.query.filter_by(username=current_user.username)
+                if article_:
+                    print('I have Id')
+                    article = update_article(form, article_, usname)
+                    #db.session.delete(g.article_)
+                else:
+                    article = Article(
+                        title=form.title.data,
+                        slug=form.slug.data,
+                        summary=form.summary.data,
+                        content=form.content.data,
+                        last_mod_date=form.last_mod_date.data,
+                        authour=usname,
+                    )
+
+                list_tags = [x.strip() for x in form.tags.data.split(',')]
+                for x in list_tags:                                             
+                    new_tag = Tag.query.filter(Tag.name==x).first()
+                    if new_tag is None:
+                        new_tag = Tag(name=x)
+                        db.session.add(new_tag)
+                    article.tags.append(new_tag)
+                db.session.commit()
+
+                flash('Congratulations, your post was succesufully submitted')
+                return redirect(f'/{article.slug}')
+
             else:
-                article = Article(
-                    title=form.title.data,
-                    slug=form.slug.data,
-                    summary=form.summary.data,
-                    content=form.content.data,
-                    last_mod_date=form.last_mod_date.data,
-                    authour=usname,
-                )
-            list_tags = [x.strip() for x in form.tags.data.split(',')]
-            
-            for x in list_tags:                                             
-                new_tag = Tag.query.filter(Tag.name==x).first()
-                if new_tag is None:
-                    new_tag = Tag(name=x)
-                    db.session.add(new_tag)
-                article.tags.append(new_tag)
-            db.session.commit()
+                if article_:
+                    #g.article_ = article_
+                    form = split_article(article_, form)
+                return render_template('writter.html', form=form, article_id=article_id)
+        flash(''' Come on !!!, You can either edit your own post  or request for an
+                Editor rigth.
+                ''', 'error')
+        logout_user()
+        return redirect(url_for('writter'))
 
-            flash('Congratulations, your post was succesufully submitted')
-            return redirect(f'/{article.slug}')
-
-        else:
-            if article_:
-                #g.article_ = article_
-                form = split_article(article_, form)
-            return render_template('writter.html', form=form, article_id=article_id)
-    
     flash('''Sorry, only users that has been given either Authour or Editor
             permissions can create or edit a post, Kindly contact Ewetoye Ibrahim for
             rectification. You have been logged-out!!!.''', 'error')
     logout_user()
-    return redirect(url_for('register'))
+    return redirect(url_for('writter'))
