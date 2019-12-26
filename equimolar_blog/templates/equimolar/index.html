@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'equimolar/base.html' %}
 {% block title %}
     {{ config.SITE_NAME }}
 {% endblock %}
@@ -20,6 +20,6 @@
         <hr>
     {%- endfor %}
 
-    {% include '_pagination.html' %}
+    {% include 'equimolar/_pagination.html' %}
 
 {% endblock %}

@@ -7,6 +7,7 @@ from werkzeug.urls import url_parse
 from flask_security import Security, SQLAlchemyUserDatastore, \
     utils, login_required, login_user, logout_user, current_user
 from flask_admin import Admin
+from flask_fileupload import FlaskFileUpload
 from markdown import markdown
 
 from . import app
@@ -17,9 +18,11 @@ from .utilities import split_article, update_article, can_edit
 # Initialize the SQLAlchemy data store.
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 # Initialize Flask-Security.
-security = Security(app, user_datastore)
+Security(app, user_datastore)
 # Initialize Flask-Admin.
-admin = Admin(app)
+Admin(app)
+# Initialize Flask-FileUpload.
+FlaskFileUpload(app)
 
 # ------- Setting up some dummy data for testing purpose ---
 ''' Note that this section must be deleted before moving into
@@ -81,17 +84,19 @@ def before_first_request():
 
 @app.errorhandler(404)
 def page_not_found(error):
+    db.session.rollback()
     title = str(error)
     message = error.description
-    return render_template('errors.html',
+    return render_template('equimolar/errors.html',
                            title=title,
                            message=message),404
 
 @app.errorhandler(500)
 def internal_server_error(error):
+    db.session.rollback()
     title = error
     message = error.description
-    return render_template('errors.html',
+    return render_template('equimolar/errors.html',
                            title=title,
                            message=message),500
 
@@ -99,7 +104,7 @@ def internal_server_error(error):
 @app.route('/')
 def index():
     pagination = Article.query.order_by(Article.last_mod_date.desc()).paginate(1)
-    return render_template('index.html',
+    return render_template('equimolar/index.html',
                            pagination=pagination)
 
 @app.route('/register/', methods=['GET', 'POST'])
@@ -114,7 +119,7 @@ def register():
             db.session.commit()
             flash('Congratulations, you have created a new registered user!')
             return redirect(url_for('index'))
-        return render_template('register.html', title='Register', form=form)
+        return render_template('equimolar/register.html', title='Register', form=form)
     flash('''Sorry, only users that has been given the Registrar role 
           can register a new user, Kindly contact Ewetoye Ibrahim for
           rectification. You have been logged-out!!!.''', 'error')
@@ -144,7 +149,7 @@ def show_article_post(slug):
     related_articles = Article.query.filter(
                         Article.tags.any(Tag.name.in_(tag_names))).order_by(
                         Article.last_mod_date.desc()).all()  
-    return render_template('post_slug.html',
+    return render_template('equimolar/post_slug.html',
                            article = article,
                            related_articles = related_articles)
 
@@ -152,7 +157,7 @@ def show_article_post(slug):
 def show_tags():
     # Displays all available tags
     tags = Tag.query.all()
-    return render_template('tags.html',
+    return render_template('equimolar/tags.html',
                            tags=tags)
 
 @app.route('/tag/<id>')
@@ -160,7 +165,7 @@ def show_tag(id):
     # Given a tag, all associated posts are displayed
     tag = Tag.query.get_or_404(id)
     articles = tag.articles.all()
-    return render_template('tag.html', tag=tag, entries=articles)
+    return render_template('equimolar/tag.html', tag=tag, entries=articles)
 
 
 @app.route('/writter/', methods=['GET', 'POST'])
@@ -219,7 +224,7 @@ def writter():
                 if article_:
                     #g.article_ = article_
                     form = split_article(article_, form)
-                return render_template('writter.html', form=form, article_id=article_id)
+                return render_template('equimolar/writter.html', form=form, article_id=article_id)
         flash(''' Come on !!!, You can either edit your own post  or request for an
                 Editor rigth.
                 ''', 'error')
