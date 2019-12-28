@@ -39,7 +39,7 @@
 <body>
     <div>
         
-        <nav class='navbar fixed-top navbar-expand-md navbar-light bg-dark'>
+        <nav class='navbar fixed-top navbar-expand-sm navbar-light bg-dark'>
             <a class='navbar-brand' href='/'><strong style="color: white; font-size: 28px">
                 {{ config.SITE_NAME }}</strong>
             </a>
@@ -51,10 +51,10 @@
             </button>
           
             <div class='collapse navbar-collapse justify-content-end' id='navbarSupportedContent'>
-                <form class='form-inline'>
+                <form class='form-inline pr-1' action="{{ url_for('search') }}" method="POST">
                     <div class='input-group'>
                         <input type='text' class='form-control' placeholder='Search Equimolar'
-                            aria-label='Search' aria-describedby='basic-addon1'>
+                        name= "search" aria-label='Search' aria-describedby='basic-addon1'>
                         <div class='input-group-prepend'>
                             <button class='input-group-text' type='submit' id='basic-addon1'>
                                 <i class='material-icons'>search</i>
@@ -62,19 +62,11 @@
                         </div>
                     </div>
                 </form>
-              <ul class='navbar-nav bg-secondary bg-light'>
-                <li class='nav-item'>
-                    <a class='nav-link' href='#'>Dashboard</a>
-                </li>
-                <span class='border-left'></span>
-                <li class='nav-item'>
-                    <a class='nav-link' href='#'>Posts</a>
-                </li>
-                <span class='border-left'></span>
-                <li class='nav-item'>
-                    <a class='nav-link' href='#'>Contact</a>
-                </li>
-              </ul>
+                <ul class='navbar-nav bg-secondary bg-light'>
+                    <li class='nav-item'>
+                        <a class='nav-link' href='#'>About Me</a>
+                    </li>
+                </ul>
               
             </div>
             {% endblock nav_stuffs %}

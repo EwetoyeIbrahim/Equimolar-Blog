@@ -4,6 +4,8 @@ from slugify import slugify
 from flask_security import utils, current_user, RoleMixin, UserMixin
 from flask_admin.contrib import sqla
 from flask_sqlalchemy import SQLAlchemy
+import flask_whooshalchemy
+from whoosh.analysis import StemmingAnalyzer
 
 from . import app
 
@@ -36,6 +38,8 @@ class Article(db.Model):
     
     __tablename__ = 'articles'
     __table_args__ = {'extend_existing': True}
+    __searchable__ = ['title', 'summary', 'content']
+    __analyzer__ = StemmingAnalyzer()
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     slug = db.Column(db.String(150))
@@ -70,12 +74,17 @@ class Article(db.Model):
             self.slug = slugify(self.title)
 
 
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-        return self
+    @classmethod
+    def public(cls):
+        # Gets only the published articles
+        return(Article.query.filter(Article.draft==0))
     
-    
+    @classmethod
+    def in_draft(cls):
+        # Gets only the draft articles
+        return(Article.query.filter(Article.draft==1))
+
+
 class Tag(db.Model):
     '''
     Consists of two columns: id, and name.

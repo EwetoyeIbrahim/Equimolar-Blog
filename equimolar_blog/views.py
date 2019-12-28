@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import flask_whooshalchemy
 
 from flask import render_template, request, abort, redirect, \
     url_for, flash
@@ -24,17 +25,17 @@ Admin(app)
 # Initialize Flask-FileUpload.
 FlaskFileUpload(app)
 
-# ------- Setting up some dummy data for testing purpose ---
-''' Note that this section must be deleted before moving into
-a production environment, They are just here for testing purpose
-'''
+# We will be using the assessing publishes articles often, thus we will assign
+# the queryfor published articles a variable of type flask_sqlalchemy.BaseQuery
+#pub_article = Article.public()
+
 # Executes before the first request is processed.
 @app.before_first_request
 def before_first_request():
     '''
     Before doing anything, We have to make sure that our database is set
-    Note, a blank database must exist before running, but if its an sqlite database
-    it will be created on the fly if it does not exist.
+    Note, a blank database must exist before running, but if its an sqlite
+    database, it will be created on the fly if it does not exist.
     After creating all the tables, we will be setting up two stuffs:
     First we will create the roles:
     Four roles are provided here:
@@ -52,11 +53,15 @@ def before_first_request():
 
     # Create any database tables that don't exist yet.
     db.create_all()
+    # Indexing to articles to be search ready
+    flask_whooshalchemy.search_index(app, Article)
 
     # Create the Roles
-    user_datastore.find_or_create_role(name='Authour',description='Write and Edit own posts')
+    user_datastore.find_or_create_role(name='Authour',
+                        description='Write and Edit own posts')
     user_datastore.find_or_create_role(name='Editor', description='Edit all posts')
-    user_datastore.find_or_create_role(name='Registrar', description='Create and Delete users')
+    user_datastore.find_or_create_role(name='Registrar',
+                                        description='Create and Delete users')
     
     
     #--- Delete this section before going public !!!
@@ -66,7 +71,8 @@ def before_first_request():
         'Authour User':['authour@example.com', 'password', 'Authour'],
         'Editor User':['editor@example.com', 'password', 'Editor'],
         'Registrar User':['registrar@example.com', 'password', 'Registrar'],
-        'Owner User':['owner@example.com', 'password', 'Registrar', 'Editor', 'Authour'],
+        'Owner User':['owner@example.com', 'password', 'Registrar', 'Editor',
+                        'Authour'],
     }
     for username, detail in default_users.items():
         
@@ -76,9 +82,10 @@ def before_first_request():
         # Assign roles to this user
         for i in detail[2:]:
             user_datastore.add_role_to_user(detail[0], i )
+    # ------- End of dummy data for set-up ------------------------------
     # Save details to database
     db.session.commit()
-# ------- End of dummy data for set-up ------------------------------
+
 
 # -------- Error Handlers --------------------------------------------
 
@@ -87,8 +94,7 @@ def page_not_found(error):
     db.session.rollback()
     title = str(error)
     message = error.description
-    return render_template('equimolar/errors.html',
-                           title=title,
+    return render_template('equimolar/errors.html', title=title,
                            message=message),404
 
 @app.errorhandler(500)
@@ -96,14 +102,14 @@ def internal_server_error(error):
     db.session.rollback()
     title = error
     message = error.description
-    return render_template('equimolar/errors.html',
-                           title=title,
+    return render_template('equimolar/errors.html', title=title,
                            message=message),500
 
 # -------- Endpoints -------------------------------------------------
 @app.route('/')
 def index():
-    pagination = Article.query.order_by(Article.last_mod_date.desc()).paginate(1)
+    pub_article = Article.public()
+    pagination = pub_article.order_by(Article.last_mod_date.desc()).paginate(1)
     return render_template('equimolar/index.html',
                            pagination=pagination)
 
@@ -119,7 +125,8 @@ def register():
             db.session.commit()
             flash('Congratulations, you have created a new registered user!')
             return redirect(url_for('index'))
-        return render_template('equimolar/register.html', title='Register', form=form)
+        return render_template('equimolar/register.html', title='Register',
+                                form=form)
     flash('''Sorry, only users that has been given the Registrar role 
           can register a new user, Kindly contact Ewetoye Ibrahim for
           rectification. You have been logged-out!!!.''', 'error')
@@ -132,26 +139,21 @@ def logout():
     return redirect('/')
 
 @app.route('/<slug>')
-def show_article_post(slug):
+def show_article(slug):
     '''
-    Renders article with the related articles.
-    Articles are based on slug, while#
-    related articles are based on tags.
-    Note: All articles are stored in Markdown syntax, thus, 
-    they must be converted html before rendering
+    Renders a published article with the given slug
     '''
-    article = Article.query.filter_by(slug=slug).first()
-    if article==None:
-        abort(404)
+    pub_article = Article.public()
+    article = pub_article.filter_by(slug=slug).first()
+    if article==None: abort(404)
     article.content = markdown(article.content)
     # Getting the related articles based on tags,
     tag_names = [x.name for x in article.tags]
-    related_articles = Article.query.filter(
-                        Article.tags.any(Tag.name.in_(tag_names))).order_by(
-                        Article.last_mod_date.desc()).all()  
+    related = pub_article.filter(
+                Article.tags.any(Tag.name.in_(tag_names))).order_by(
+                Article.last_mod_date.desc()).all()  
     return render_template('equimolar/post_slug.html',
-                           article = article,
-                           related_articles = related_articles)
+                            article = article, related_articles = related)
 
 @app.route('/tags')
 def show_tags():
@@ -162,9 +164,9 @@ def show_tags():
 
 @app.route('/tag/<id>')
 def show_tag(id):
-    # Given a tag, all associated posts are displayed
+    # Given a tag, all associated published posts are displayed
     tag = Tag.query.get_or_404(id)
-    articles = tag.articles.all()
+    articles = tag.articles.filter_by(draft=0).all()
     return render_template('equimolar/tag.html', tag=tag, entries=articles)
 
 
@@ -183,21 +185,24 @@ def writter():
     :param article_id: An optional query for editing an already published post
     :type article_id: str
     '''
+    
     if (current_user.has_role('Authour') or current_user.has_role('Editor')) :
         article_id = request.args.get('article_id',None)
         form = ArticleForm()
         article_ = Article.query.filter(Article.id==article_id).first()
         editable = True
         if article_:
-            editable = can_edit(current_user, article_.authour.first().username)
-
+            try:
+                editable = can_edit(current_user, article_.authour.first().username)
+            except:
+                # an Exception will only be raised if the post is not assigned to a
+                # user, thus in case of any Exception, only an Editor is permitted.
+                if not current_user.has_role('Editor'): editable = False
         if editable:     
             if request.method == 'POST':
                 usname = User.query.filter_by(username=current_user.username)
                 if article_:
-                    print('I have Id')
                     article = update_article(form, article_, usname)
-                    #db.session.delete(g.article_)
                 else:
                     article = Article(
                         title=form.title.data,
@@ -224,15 +229,54 @@ def writter():
                 if article_:
                     #g.article_ = article_
                     form = split_article(article_, form)
-                return render_template('equimolar/writter.html', form=form, article_id=article_id)
-        flash(''' Come on !!!, You can either edit your own post  or request for an
-                Editor rigth.
-                ''', 'error')
+                return render_template('equimolar/writter.html', form=form,
+                                        article_id=article_id)
+        flash(''' Come on !!!, You can either edit your own post  or request
+                for an Editor right. You have been logged out!!!''', 'error')
         logout_user()
         return redirect(url_for('writter'))
 
     flash('''Sorry, only users that has been given either Authour or Editor
-            permissions can create or edit a post, Kindly contact Ewetoye Ibrahim for
-            rectification. You have been logged-out!!!.''', 'error')
+            permissions can create or edit a post, Kindly contact the Admin
+            for rectification. You have been logged-out!!!.''', 'error')
     logout_user()
     return redirect(url_for('writter'))
+
+
+
+@app.route('/search', methods=['GET','POST'])
+def search():
+    '''
+    Here, I am reusing the index template to serve the seach result
+    '''
+    pub_article = Article.public()
+    request.query_string.decode("utf-8")
+    q = request.form.get('search')
+    results = pub_article.search(q).paginate(1)
+    if results.items:
+        return render_template('equimolar/index.html', pagination=results)
+    flash('No result found', 'error')
+    return redirect(url_for('index'))
+    
+@app.route('/draft')
+@login_required
+def drafts():
+    slug=request.args.get('slug',None)
+    draft_article = Article.in_draft()
+    if slug:
+        print(slug)
+        article = draft_article.filter_by(slug=slug).first()
+        if article==None: abort(404)
+        article.content = markdown(article.content)
+        # Getting the related articles based on tags,
+        tag_names = [x.name for x in article.tags]
+        related = draft_article.filter(
+                    Article.tags.any(Tag.name.in_(tag_names))).order_by(
+                    Article.last_mod_date.desc()).all() 
+        return render_template('equimolar/post_slug.html',
+                            article = article, related_articles = related)
+    
+    pagination = draft_article.order_by( Article.last_mod_date.desc()).paginate(1)
+    return render_template('equimolar/index.html',
+                           pagination=pagination, drafts=True)
+

@@ -1,5 +1,8 @@
-from . import app
 from slugify import slugify
+from markdown import markdown
+
+from . import app
+from .models import Article, Tag
 
 def blog_date(dateobj):
     '''
