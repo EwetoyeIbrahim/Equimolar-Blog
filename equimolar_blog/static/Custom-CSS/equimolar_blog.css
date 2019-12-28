@@ -1,0 +1,13 @@
+a {
+    color:darkkhaki;
+    text-decoration: green;
+}
+
+/* 
+Bootstrap's img-fluid is mimicked here so that images in posts
+too can behave responsively
+*/
+img {
+    max-width: 100%;
+    height: auto;
+}

@@ -2,9 +2,22 @@ from . import app
 from slugify import slugify
 
 def blog_date(dateobj):
+    '''
+    converts a date into the blog's format rigth from Jinja2
+    :param dateobj: datetime
+    :param dateobj: datetime object
+    '''
     return dateobj.strftime('%b %d, %Y')
 
 def split_article(article, form):
+    '''
+    assign the contents of an article to
+    the form fields, ready to be edited
+    :param form: form response
+    :type form: object
+    :param article: article to be edited
+    :type article: object
+    '''
     form.title.data = article.title
     form.slug.data = article.slug
     form.summary.data = article.summary
@@ -14,6 +27,15 @@ def split_article(article, form):
     return form
 
 def update_article(form, article, username):
+    '''
+    Updates an existing article
+    :param form: form response
+    :type form: object
+    :param article: article to be edited
+    :type article: object
+    :param username: current editor
+    :type username: str
+    '''
     article.title = form.title.data
     if form.slug.data:
         article.slug = slugify(form.slug.data)
@@ -22,8 +44,13 @@ def update_article(form, article, username):
     article.summary = form.summary.data
     article.content = form.content.data
     article.last_mod_date = form.last_mod_date.data
-    #form.tags.data = ', '.join([tag.name for tag in article.tags])
+    '''
+    Based on what I need, I want an article to be attributed
+    the starting authour of a post.
+    If you want the post to be attributed to the last post
+    person who edited the article, just uncomment the line below
     article.authour=username
+    '''
     # For now, the only way I know how to deal with tags is
     # to set the tags to empty and then add it again from the
     # view function, I will definately read-up on this
@@ -50,6 +77,6 @@ def can_edit(current_user, authour):
     return False
 
 
-
+# These set of variable will called directly from templates
 app.jinja_env.globals['blog_date'] = blog_date
 app.jinja_env.globals['can_edit'] = can_edit

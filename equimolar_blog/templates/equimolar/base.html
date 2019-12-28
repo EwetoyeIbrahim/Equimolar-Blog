@@ -6,33 +6,31 @@
     {% block meta %}
     {% endblock meta %}
 
-
     <!-- Bootstrap CSS -->
-    <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css' integrity='sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh' crossorigin='anonymous'>
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-
+    <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css'
+        integrity='sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh'
+        crossorigin='anonymous'>
+    <!-- Google font icons-->
+    <link href='https://fonts.googleapis.com/icon?family=Material+Icons' rel='stylesheet'>
+    <!-- Custom CSS for Jupyter Notebooks Markdowns -->
+    <link rel='stylesheet' href='../static/custom-css/colorful.css'>
+    <!-- Custom CSS for equimolar blog-->
+    <link rel='stylesheet' href='../static/custom-css/equimolar_blog.css'>
     
+    
+    <!-- Other page specific stylesheets -->
+    {% block extrastyle %}
+    {% endblock extrastyle %}
+
     {% block urgent_scripts %}
         <!--
             As much as I am an advocate of calling scripts at the rear end,
             After wasting several hours I noticed that my rich markdown editor
             would use its resources if not assign as very early before the form
             gets rendered, thus the need for this block
-        -->
-    
+        -->  
     {% endblock urgent_scripts %}
 
-
-    <!-- Google font icons-->
-    <link href='https://fonts.googleapis.com/icon?family=Material+Icons' rel='stylesheet'>
-    <!-- Custom CSS for Jupyter Notebooks Markdowns -->
-    <link rel='stylesheet' href='../static/custom-css/colorful.css'>
-    <!-- Anyother page specific stylesheets -->
-    {% block extrastyle %}
-    {% endblock extrastyle %}
-    <!-- Intentionaly kept here as it is very small-->
-    <style> a { color:darkkhaki; text-decoration: green;} </style>
     <title>
         {% block title %}
         {% endblock title %}
@@ -40,18 +38,27 @@
 </head>
 <body>
     <div>
+        
         <nav class='navbar fixed-top navbar-expand-md navbar-light bg-dark'>
-            <a class='navbar-brand' href='/'><strong style="color: white; font-size: 28px">{{ config.SITE_NAME }}</strong></a>
-            <button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarSupportedContent' aria-controls='navbarSupportedContent' aria-expanded='false' aria-label='Toggle navigation'>
-              <span class='navbar-toggler-icon'></span>
+            <a class='navbar-brand' href='/'><strong style="color: white; font-size: 28px">
+                {{ config.SITE_NAME }}</strong>
+            </a>
+            {% block nav_stuffs %}
+            <button class='navbar-toggler' type='button' data-toggle='collapse'
+                data-target='#navbarSupportedContent' aria-controls='navbarSupportedContent'
+                aria-expanded='false' aria-label='Toggle navigation'>
+                <span class='navbar-toggler-icon'></span>
             </button>
           
             <div class='collapse navbar-collapse justify-content-end' id='navbarSupportedContent'>
                 <form class='form-inline'>
                     <div class='input-group'>
-                        <input type='text' class='form-control' placeholder='Search Equimolar' aria-label='Search' aria-describedby='basic-addon1'>
+                        <input type='text' class='form-control' placeholder='Search Equimolar'
+                            aria-label='Search' aria-describedby='basic-addon1'>
                         <div class='input-group-prepend'>
-                            <button class='input-group-text' type='submit' id='basic-addon1'><i class='material-icons'>search</i></button>
+                            <button class='input-group-text' type='submit' id='basic-addon1'>
+                                <i class='material-icons'>search</i>
+                            </button>
                         </div>
                     </div>
                 </form>
@@ -70,7 +77,9 @@
               </ul>
               
             </div>
+            {% endblock nav_stuffs %}
         </nav>
+        
         <div class='container-fluid bg-secondary bg-light'>
             <div class='row pt-4 mt-2'>
                 <div class='container col-lg-9 mt-5 pt-4'>
@@ -82,7 +91,7 @@
                     <div class='sticky-top pt-5 '>
                         <div class="bg-secondary bg-light">
                             <hr>
-                            <img class='img-fluid mx-auto d-block'
+                            <img class='mx-auto d-block'
                                 alt='advert banner' src='../static/Images/ads0.jpg'>
                             <hr>
                         </div>
@@ -92,16 +101,13 @@
                 </nav>
             </div>
         </div>
-
     </div>
     
-
-    <!-- Optional JavaScript -->
+    <!-- Bootstrap Documentation JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-
-    <script href='https://code.jquery.com/jquery-3.4.1.slim.min.js' integrity='sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n' crossorigin='anonymous'></script>
-    <script href='https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js' integrity='sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo' crossorigin='anonymous'></script>
-    <script href='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js' integrity='sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6' crossorigin='anonymous'></script>
+    <script src='https://code.jquery.com/jquery-3.4.1.slim.min.js' integrity='sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n' crossorigin='anonymous'></script>
+    <script src='https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js' integrity='sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo' crossorigin='anonymous'></script>
+    <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js' integrity='sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6' crossorigin='anonymous'></script>
 
     {% block extrascript %}
     {% endblock extrascript %}
