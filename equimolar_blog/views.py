@@ -9,10 +9,10 @@ from flask_security import Security, SQLAlchemyUserDatastore, \
     utils, login_required, login_user, logout_user, current_user
 from flask_admin import Admin
 from flask_fileupload import FlaskFileUpload
-from markdown import markdown
 
 from . import app
-from .models import Article, Tag, db, User, Role, articles_tags
+from .models import Article, Tag, db, User, Role, articles_tags, \
+                    ArticleAdmin, TagAdmin, UserAdmin, RoleAdmin
 from .forms import ArticleForm, LoginForm, RegistrationForm
 from .utilities import split_article, update_article, can_edit
 # ----------- Initializations----------------------------------
@@ -20,14 +20,16 @@ from .utilities import split_article, update_article, can_edit
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 # Initialize Flask-Security.
 Security(app, user_datastore)
-# Initialize Flask-Admin.
-Admin(app)
+
 # Initialize Flask-FileUpload.
 FlaskFileUpload(app)
 
-# We will be using the assessing publishes articles often, thus we will assign
-# the queryfor published articles a variable of type flask_sqlalchemy.BaseQuery
-#pub_article = Article.public()
+# Initialize Flask-Admin.
+admin = Admin(app)
+admin.add_view(ArticleAdmin(Article, db.session))
+admin.add_view(TagAdmin(Tag, db.session))
+admin.add_view(UserAdmin(User, db.session))
+admin.add_view(RoleAdmin(Role, db.session))
 
 # Executes before the first request is processed.
 @app.before_first_request
@@ -146,12 +148,11 @@ def show_article(slug):
     pub_article = Article.public()
     article = pub_article.filter_by(slug=slug).first()
     if article==None: abort(404)
-    article.content = markdown(article.content)
     # Getting the related articles based on tags,
     tag_names = [x.name for x in article.tags]
     related = pub_article.filter(
                 Article.tags.any(Tag.name.in_(tag_names))).order_by(
-                Article.last_mod_date.desc()).all()  
+                Article.last_mod_date.desc()).limit(6).all()  
     return render_template('equimolar/post_slug.html',
                             article = article, related_articles = related)
 
@@ -267,12 +268,11 @@ def drafts():
         print(slug)
         article = draft_article.filter_by(slug=slug).first()
         if article==None: abort(404)
-        article.content = markdown(article.content)
         # Getting the related articles based on tags,
         tag_names = [x.name for x in article.tags]
         related = draft_article.filter(
                     Article.tags.any(Tag.name.in_(tag_names))).order_by(
-                    Article.last_mod_date.desc()).all() 
+                    Article.last_mod_date.desc()).limit(6).all() 
         return render_template('equimolar/post_slug.html',
                             article = article, related_articles = related)
     

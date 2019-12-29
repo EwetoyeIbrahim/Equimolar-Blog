@@ -15,7 +15,7 @@
     </button>
     {% endif %}
     <hr>
-    {{ article.content|safe }}
+    {{ article.html_content }}
 
     {% if article.last_mod_date %}
         <p>
@@ -39,7 +39,10 @@
     {% if related_articles %}
         <p>Related Posts</p>
         {% for related in related_articles %}
-            <li><a href="/{{ related.slug }}">{{ related.title }}</a></li>
+            {% if related.title != article.title %}
+                <li><a href="/{{ related.slug }}">{{ related.title }}
+                </a></li>
+            {% endif %}
         {% endfor %}
     {% endif %}
 {% endblock %}

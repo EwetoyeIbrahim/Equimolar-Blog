@@ -1,11 +1,16 @@
 from datetime import datetime
 
+from flask import Markup
 from slugify import slugify
 from flask_security import utils, current_user, RoleMixin, UserMixin
 from flask_admin.contrib import sqla
 from flask_sqlalchemy import SQLAlchemy
 import flask_whooshalchemy
+from wtforms.fields import PasswordField
 from whoosh.analysis import StemmingAnalyzer
+from markdown import markdown
+from markdown.extensions.codehilite import CodeHiliteExtension
+from markdown.extensions.fenced_code import FencedCodeExtension
 
 from . import app
 
@@ -84,6 +89,14 @@ class Article(db.Model):
         # Gets only the draft articles
         return(Article.query.filter(Article.draft==1))
 
+    @property
+    def html_content(self):
+        ''' Converts the content markdown into a Jinja Safe HTML'''
+        #Initialize the markdown extensions
+        md_extn1 = CodeHiliteExtension()
+        md_extn2 = FencedCodeExtension()
+        html_content = markdown(self.content, extensions=[md_extn1, md_extn2])
+        return Markup(html_content)
 
 class Tag(db.Model):
     '''
@@ -134,14 +147,14 @@ class Role(db.Model, RoleMixin):
     name = db.Column(db.String(80), unique=True)
     description = db.Column(db.String(255))
 
-    # __str__ is required by Flask-Admin, so we can have human-readable values for the
-    # Role when editing a User.
+    # __str__ is required by Flask-Admin, so we can have human-readable values
+    # for the Role when editing a User.
     # If we were using Python 2.7, this would be __unicode__ instead.
     def __str__(self):
         return self.name
 
-    # __hash__ is required to avoid the exception TypeError: unhashable type: 'Role'
-    # when saving a User
+    # __hash__ is required to avoid the exception
+    # TypeError: unhashable type: 'Role' when saving a User
     def __hash__(self):
         return hash(self.name)
 
@@ -151,17 +164,18 @@ class User(db.Model, UserMixin):
     '''
     Eight fields: id, username, email, password, active, confirmed_at, roles, 
     and articles_ids.
-    The roles field represents a many-to-many relationship using the roles_users table.
-    i.e, Each user may have no role, one role, or multiple roles.
-    The articles_ids represent a one to many relationship, as each user can have many
-    posts, but  one post can not be owned by many users
+    The roles field represents a many-to-many relationship using the roles_users
+    table. i.e, Each user may have no role, one role, or multiple roles.
+    The articles_ids represent a one to many relationship, as each user can have
+    many posts, but  one post can not be owned by many users
     '''
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(128), unique=True)
     password = db.Column(db.String(128))
     active = db.Column(db.Boolean(), default=True)
-    confirmed_at = db.Column(db.DateTime(), default = datetime.date(datetime.utcnow()))
+    confirmed_at = db.Column(db.DateTime(),
+                            default = datetime.date(datetime.utcnow()))
     roles = db.relationship(
         'Role',
         secondary=roles_users,
@@ -181,37 +195,43 @@ class UserAdmin(sqla.ModelView):
     # Don't display the password on the list of Users
     column_exclude_list = ('password',)
 
-    # Don't include the standard password field when creating or editing a User (but see below)
+    # Don't include the standard password field when 
+    # creating or editing a User (but see below)
     form_excluded_columns = ('password',)
 
-    # Automatically display human-readable names for the current and available Roles when creating or editing a User
+    # Automatically display human-readable names for the current and
+    # available Roles when creating or editing a User
     column_auto_select_related = True
 
-    # Prevent administration of Users unless the currently logged-in user has the 'Registrar' role
+    # Prevent administration of Users unless the currently logged-in
+    # user has the 'Registrar' role
     def is_accessible(self):
         return current_user.has_role('Registrar')
 
-    # On the form for creating or editing a User, don't display a field corresponding to the model's password field.
-    # There are two reasons for this. First, we want to encrypt the password before storing in the database. Second,
-    # we want to use a password field (with the input masked) rather than a regular text field.
+    # On the form for creating or editing a User, don't display a field
+    # corresponding to the model's password field.
+    # There are two reasons for this. First, we want to encrypt the password
+    # before storing in the database. Second, we want to use a password field
+    # (with the input masked) rather than a regular text field.
     def scaffold_form(self):
 
-        # Start with the standard form as provided by Flask-Admin. We've already told Flask-Admin to exclude the
-        # password field from this form.
+        # Start with the standard form as provided by Flask-Admin. We've already
+        # told Flask-Admin to exclude the password field from this form.
         form_class = super(UserAdmin, self).scaffold_form()
 
-        # Add a password field, naming it 'password2' and labeling it 'New Password'.
+        # Add a password field, name it 'password2' and labeling it 'New Password'.
         form_class.password2 = PasswordField('New Password')
         return form_class
 
-    # This callback executes when the user saves changes to a newly-created or edited User -- before the changes are
-    # committed to the database.
+    # This callback executes when the user saves changes to a newly-created or
+    # edited User -- before the changes are committed to the database.
     def on_model_change(self, form, model, is_created):
 
         # If the password field isn't blank...
         if len(model.password2):
 
-            # ... then encrypt the new password prior to storing it in the database. If the password field is blank,
+            # Encrypt the new password prior to storing it in the database.
+            # If the password field is blank,
             # the existing password in the database will be retained.
             model.password = utils.encrypt_password(model.password2)
 
@@ -219,19 +239,22 @@ class UserAdmin(sqla.ModelView):
 # Customized Role model for SQL-Admin
 class RoleAdmin(sqla.ModelView):
 
-    # Prevent administration of Roles unless the currently logged-in user has the 'Registrar' role
+    # Prevent administration of Roles unless the currently logged-in user has the
+    # 'Registrar' role
     def is_accessible(self):
         return current_user.has_role('Registrar')
 
-class PostAdmin(sqla.ModelView):
+class ArticleAdmin(sqla.ModelView):
     
-    # Prevent administration of Post unless the currently logged-in user has the 'Editor' role
+    # Prevent administration of Post unless the currently logged-in user has the
+    # 'Editor' role
     def is_accessible(self):
         return current_user.has_role('Editor')
     
 class TagAdmin(sqla.ModelView):
     
-    # Prevent administration of Tags unless the currently logged-in user has the 'Editor' role
+    # Prevent administration of Tags unless the currently logged-in user has the
+    # 'Editor' role
     def is_accessible(self):
         return current_user.has_role('Editor')
         
