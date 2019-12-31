@@ -12,9 +12,9 @@ from markdown import markdown
 from markdown.extensions.codehilite import CodeHiliteExtension
 from markdown.extensions.fenced_code import FencedCodeExtension
 
-from . import app
+#from . import app
 
-db = SQLAlchemy(app)
+db = SQLAlchemy()
 
 # A simple table to map the many-to-many relationship between articles and tags
 articles_tags = db.Table(

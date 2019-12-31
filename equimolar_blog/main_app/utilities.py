@@ -1,8 +1,8 @@
 from slugify import slugify
 from markdown import markdown
 
-from . import app
-from .models import Article, Tag
+#from . import app
+from models import Article, Tag
 
 def blog_date(dateobj):
     '''
@@ -79,7 +79,8 @@ def can_edit(current_user, authour):
             return True
     return False
 
-
+'''
 # These set of variable will called directly from templates
 app.jinja_env.globals['blog_date'] = blog_date
 app.jinja_env.globals['can_edit'] = can_edit
+'''

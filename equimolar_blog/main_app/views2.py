@@ -3,38 +3,21 @@ import json
 import flask_whooshalchemy
 
 from flask import render_template, request, abort, redirect, \
-    url_for, flash
-from werkzeug.urls import url_parse
+    url_for, flash, Blueprint
 from flask_security import Security, SQLAlchemyUserDatastore, \
     utils, login_required, login_user, logout_user, current_user
-from flask_admin import Admin
-from flask_fileupload import FlaskFileUpload
-
-from . import app
-from .models import Article, Tag, db, User, Role, articles_tags, \
-                    ArticleAdmin, TagAdmin, UserAdmin, RoleAdmin
+'''from run import app'''
+from models import Article, Tag, User, Role, articles_tags
 from .forms import ArticleForm, LoginForm, RegistrationForm
-from .utilities import split_article, update_article, can_edit
-# ----------- Initializations----------------------------------
-# Initialize the SQLAlchemy data store.
-user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-# Initialize Flask-Security.
-Security(app, user_datastore)
+from .utilities import blog_date, split_article, update_article, can_edit
+from equimolar_blog import db
 
-# Initialize Flask-FileUpload.
-FlaskFileUpload(app)
 
-# Initialize Flask-Admin.
-admin = Admin(app)
-admin.add_view(ArticleAdmin(Article, db.session))
-admin.add_view(TagAdmin(Tag, db.session))
-admin.add_view(UserAdmin(User, db.session))
-admin.add_view(RoleAdmin(Role, db.session))
-
+'''
 # Executes before the first request is processed.
 @app.before_first_request
 def before_first_request():
-    '''
+    
     Before doing anything, We have to make sure that our database is set
     Note, a blank database must exist before running, but if its an sqlite
     database, it will be created on the fly if it does not exist.
@@ -51,7 +34,7 @@ def before_first_request():
     of the dummy users are as stated above, i.e,
     Authour is assigned username='Authour', email='author@example.com', and
     password='password'
-    '''
+    
 
     # Create any database tables that don't exist yet.
     db.create_all()
@@ -87,11 +70,14 @@ def before_first_request():
     # ------- End of dummy data for set-up ------------------------------
     # Save details to database
     db.session.commit()
-
+'''
 
 # -------- Error Handlers --------------------------------------------
+blueprint = Blueprint('main', __name__)
+blueprint.add_app_template_global(blog_date)
+blueprint.add_app_template_global(can_edit)
 
-@app.errorhandler(404)
+@blueprint.errorhandler(404)
 def page_not_found(error):
     db.session.rollback()
     title = str(error)
@@ -99,7 +85,7 @@ def page_not_found(error):
     return render_template('equimolar/errors.html', title=title,
                            message=message),404
 
-@app.errorhandler(500)
+@blueprint.errorhandler(500)
 def internal_server_error(error):
     db.session.rollback()
     title = error
@@ -108,14 +94,14 @@ def internal_server_error(error):
                            message=message),500
 
 # -------- Endpoints -------------------------------------------------
-@app.route('/')
+@blueprint.route('/')
 def index():
     pub_article = Article.public()
     pagination = pub_article.order_by(Article.last_mod_date.desc()).paginate(1)
     return render_template('equimolar/index.html',
                            pagination=pagination)
 
-@app.route('/register/', methods=['GET', 'POST'])
+@blueprint.route('/register/', methods=['GET', 'POST'])
 @login_required
 def register():
     if current_user.has_role('Registrar'):
@@ -135,12 +121,12 @@ def register():
     logout_user()
     return redirect(url_for('register'))
 
-@app.route('/logout/')
+@blueprint.route('/logout/')
 def logout():
     logout_user()
     return redirect('/')
 
-@app.route('/<slug>')
+@blueprint.route('/<slug>')
 def show_article(slug):
     '''
     Renders a published article with the given slug
@@ -156,14 +142,14 @@ def show_article(slug):
     return render_template('equimolar/post_slug.html',
                             article = article, related_articles = related)
 
-@app.route('/tags')
+@blueprint.route('/tags')
 def show_tags():
     # Displays all available tags
     tags = Tag.query.all()
     return render_template('equimolar/tags.html',
                            tags=tags)
 
-@app.route('/tag/<id>')
+@blueprint.route('/tag/<id>')
 def show_tag(id):
     # Given a tag, all associated published posts are displayed
     tag = Tag.query.get_or_404(id)
@@ -171,7 +157,7 @@ def show_tag(id):
     return render_template('equimolar/tag.html', tag=tag, entries=articles)
 
 
-@app.route('/writter/', methods=['GET', 'POST'])
+@blueprint.route('/writter/', methods=['GET', 'POST'])
 @login_required
 def writter():
     '''
@@ -235,17 +221,17 @@ def writter():
         flash(''' Come on !!!, You can either edit your own post  or request
                 for an Editor right. You have been logged out!!!''', 'error')
         logout_user()
-        return redirect(url_for('writter'))
+        return redirect(url_for('.writter'))
 
     flash('''Sorry, only users that has been given either Authour or Editor
             permissions can create or edit a post, Kindly contact the Admin
             for rectification. You have been logged-out!!!.''', 'error')
     logout_user()
-    return redirect(url_for('writter'))
+    return redirect(url_for('.writter'))
 
 
 
-@app.route('/search', methods=['GET','POST'])
+@blueprint.route('/search', methods=['GET','POST'])
 def search():
     '''
     Here, I am reusing the index template to serve the seach result
@@ -257,9 +243,9 @@ def search():
     if results.items:
         return render_template('equimolar/index.html', pagination=results)
     flash('No result found', 'error')
-    return redirect(url_for('index'))
+    return redirect(url_for('.index'))
     
-@app.route('/draft')
+@blueprint.route('/draft')
 @login_required
 def drafts():
     slug=request.args.get('slug',None)
