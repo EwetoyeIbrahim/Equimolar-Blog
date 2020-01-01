@@ -16,12 +16,6 @@ class ArticleForm(FlaskForm):
     tags = StringField('tags', validators=[DataRequired()])
     draft = BooleanField('draft', default=False)
     submit = SubmitField('submit')
-    
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Sign In')
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])

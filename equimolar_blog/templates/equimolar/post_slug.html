@@ -10,7 +10,7 @@
     <h3><small>{{ article.summary }}</small></h3>
     {% if can_edit(current_user, article.authour.first().username) %}
         <button>
-            <a href="{{ url_for('main.writter', article_id=article.id) }}">
+            <a href="{{ url_for('equimolar_blog.writter', article_id=article.id) }}">
             Edit this article</a>
         </button>
     {% endif %}

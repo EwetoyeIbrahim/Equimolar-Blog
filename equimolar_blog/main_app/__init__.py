@@ -1,3 +1,3 @@
 def create_module(app):
-    from .views2 import blueprint
-    app.register_blueprint(blueprint)
+    from .views import equimolar_bp
+    app.register_blueprint(equimolar_bp)
