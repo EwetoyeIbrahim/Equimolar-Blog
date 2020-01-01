@@ -29,6 +29,7 @@ def create_app(config_name):
     from equimolar_blog.main_app import create_module
     with app.app_context():
         # Time to make sure roles exist in the database
+        db.create_all()
         try:
             from create_db import create_roles
             create_roles(user_datastore, db)
