@@ -47,6 +47,7 @@ def update_article(form, article, username):
     article.summary = form.summary.data
     article.content = form.content.data
     article.last_mod_date = form.last_mod_date.data
+    article.draft = form.draft.data
     '''
     Based on what I need, I want an article to be attributed
     the starting authour of a post.

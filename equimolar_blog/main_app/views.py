@@ -5,13 +5,13 @@ from flask import render_template, request, abort, redirect, \
     url_for, flash, Blueprint
 from flask_security import Security, SQLAlchemyUserDatastore, \
     login_required, login_user, logout_user, current_user
-
 from equimolar_blog import db
 from models import Article, Tag, User, Role
 from .forms import ArticleForm, RegistrationForm
 from .utilities import blog_date, split_article, update_article, can_edit
 
 # Declaring the blueprints ------------------------------------------
+
 equimolar_bp = Blueprint('equimolar_blog', __name__)
 # Template accessible variables
 equimolar_bp.add_app_template_global(blog_date)
@@ -24,7 +24,7 @@ def page_not_found(error):
     title = str(error)
     message = error.description
     return render_template('equimolar/errors.html', title=title,
-                           message=message),404
+                        message=message),404
 
 @equimolar_bp.errorhandler(500)
 def internal_server_error(error):
@@ -32,7 +32,7 @@ def internal_server_error(error):
     title = error
     message = error.description
     return render_template('equimolar/errors.html', title=title,
-                           message=message),500
+                        message=message),500
 
 # -------- Endpoints -------------------------------------------------
 @equimolar_bp.route('/')
@@ -40,7 +40,7 @@ def index():
     pub_article = Article.public()
     pagination = pub_article.order_by(Article.last_mod_date.desc()).paginate(1)
     return render_template('equimolar/index.html',
-                           pagination=pagination)
+                        pagination=pagination)
 
 @equimolar_bp.route('/register/', methods=['GET', 'POST'])
 @login_required
@@ -57,8 +57,8 @@ def register():
         return render_template('equimolar/register.html', title='Register',
                                 form=form)
     flash('''Sorry, only users that has been given the Registrar role 
-          can register a new user, Kindly contact Ewetoye Ibrahim for
-          rectification. You have been logged-out!!!.''', 'error')
+        can register a new user, Kindly contact Ewetoye Ibrahim for
+        rectification. You have been logged-out!!!.''', 'error')
     logout_user()
     return redirect(url_for('register'))
 
@@ -88,7 +88,7 @@ def show_tags():
     # Displays all available tags
     tags = Tag.query.all()
     return render_template('equimolar/tags.html',
-                           tags=tags)
+                        tags=tags)
 
 @equimolar_bp.route('/tag/<id>')
 def show_tag(id):
@@ -139,6 +139,7 @@ def writter():
                         content=form.content.data,
                         last_mod_date=form.last_mod_date.data,
                         authour=usname,
+                        draft=form.draft.data,
                     )
 
                 list_tags = [x.strip() for x in form.tags.data.split(',')]
@@ -149,13 +150,15 @@ def writter():
                         db.session.add(new_tag)
                     article.tags.append(new_tag)
                 db.session.commit()
-
-                flash('Congratulations, your post was succesufully submitted')
-                return redirect(f'/{article.slug}')
+                if form.draft.data==False:
+                    flash('Congratulations, your article has been published')
+                    return redirect(f'/{article.slug}')
+                else:
+                    flash('Your Article has been saved to draft')
+                    return redirect(f'/draft?slug={article.slug}')
 
             else:
                 if article_:
-                    #g.article_ = article_
                     form = split_article(article_, form)
                 return render_template('equimolar/writter.html', form=form,
                                         article_id=article_id)
@@ -198,11 +201,11 @@ def drafts():
         tag_names = [x.name for x in article.tags]
         related = draft_article.filter(
                     Article.tags.any(Tag.name.in_(tag_names))).order_by(
-                    Article.last_mod_date.desc()).limit(6).all() 
+                    Article.last_mod_date.desc()).limit(11).all() 
         return render_template('equimolar/post_slug.html',
                             article = article, related_articles = related)
     
     pagination = draft_article.order_by( Article.last_mod_date.desc()).paginate(1)
     return render_template('equimolar/index.html',
-                           pagination=pagination, drafts=True)
+                        pagination=pagination, drafts=True)
 

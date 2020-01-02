@@ -24,6 +24,8 @@ def create_roles(user_datastore, db):
     Editor      |   Edit all posts (Post Table)
     Registrar   |   Create and Delete users (User Table)
     '''
+    # Create the tables, if they don't exist
+    db.create_all()
     # Create the Roles if they don't exist
     user_datastore.find_or_create_role(name='Authour',
                         description='Write and Edit own posts')
