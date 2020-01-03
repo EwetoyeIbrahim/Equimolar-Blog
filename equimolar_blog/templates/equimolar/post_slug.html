@@ -6,6 +6,13 @@
     {{ article.title }}
 {% endblock %}
 {% block main %}
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for msg in messages %}
+            <p>{{ msg }}</p>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
     <h1>{{ article.title }}</h1>
     <h3><small>{{ article.summary }}</small></h3>
     {% if can_edit(current_user, article.authour.first().username) %}

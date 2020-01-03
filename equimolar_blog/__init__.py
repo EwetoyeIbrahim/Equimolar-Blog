@@ -17,7 +17,6 @@ def create_app(config_name):
     db.reflect(app=app)
     # Initialize Flask-FileUpload.
     FlaskFileUpload(app)
-    flask_whooshalchemy.search_index(app, Article)
     # Initialize Flask-Admin.
     admin = Admin(app)
     admin.add_view(ArticleAdmin(Article, db.session))
@@ -31,6 +30,10 @@ def create_app(config_name):
     # Initialize Flask-Security.
     Security(app, user_datastore)
     with app.app_context():
+        # Create ahy table that is not in existence
+        db.create_all()
+        # Index the articles
+        flask_whooshalchemy.search_index(app, Article)
         # Time to make sure roles exist in the database
         try:
             # the create_db.py file, may be deleted, to prevent the
