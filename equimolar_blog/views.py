@@ -5,8 +5,7 @@ from flask import render_template, request, abort, redirect, \
     url_for, flash, Blueprint
 from flask_security import Security, SQLAlchemyUserDatastore, \
     login_required, login_user, logout_user, current_user
-from equimolar_blog import db
-from models import Article, Tag, User, Role
+from equimolar_blog import db, Article, Tag, User, Role
 from .forms import ArticleForm, RegistrationForm
 from .utilities import blog_date, split_article, update_article, can_edit
 

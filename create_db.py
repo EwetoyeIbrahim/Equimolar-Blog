@@ -42,7 +42,7 @@ def create_dummy_db():
     password='password'
     '''
     from flask_security import utils, SQLAlchemyUserDatastore
-    from equimolar_blog import db, User, Role
+    from equimolar_blog.models import db, User, Role
     from run import app
     with app.app_context():
         # Create any database tables that don't exist yet.

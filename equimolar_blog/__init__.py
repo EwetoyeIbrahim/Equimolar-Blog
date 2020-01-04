@@ -8,7 +8,6 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from models import Article, Tag, db, User, Role, ArticleAdmin, \
                     TagAdmin, UserAdmin, RoleAdmin
 from config import config
-from .main_app import create_module
 
 def create_app(config_name):
     app=Flask(__name__)
@@ -32,8 +31,6 @@ def create_app(config_name):
     with app.app_context():
         # Create ahy table that is not in existence
         db.create_all()
-        # Index the articles
-        flask_whooshalchemy.search_index(app, Article)
         # Time to make sure roles exist in the database
         try:
             # the create_db.py file, may be deleted, to prevent the
@@ -42,6 +39,9 @@ def create_app(config_name):
             create_roles(user_datastore, db)
         except ImportError:
             pass
-        create_module(app)
+        from .views import equimolar_bp
+        app.register_blueprint(equimolar_bp)
+        # Index the articles
+        flask_whooshalchemy.search_index(app, Article)
     return app
 

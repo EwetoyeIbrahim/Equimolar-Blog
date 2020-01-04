@@ -3,7 +3,7 @@ from wtforms import StringField, PasswordField, BooleanField,\
     SubmitField, TextAreaField, DateField
 from wtforms.validators import ValidationError, DataRequired, \
     Email, Length, EqualTo
-from models import User
+from .models import User
 from datetime import datetime
 
 class ArticleForm(FlaskForm):
