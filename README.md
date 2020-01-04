@@ -1,6 +1,6 @@
 # Equimolar-Blog
-This is a flask blogging engine for publishing articles. A live extended implementation will be made available at [Equimolar.com](http://Equimolar.com). In 
-In this ReadMe we will be going through the following content  
+This is a flask blogging engine for publishing articles. A live implementation will be made available at Equimolar.com in the coming weeks. 
+Here, will be going through the following in the content: 
 1. [The Problem](#the-problem)
 2. [Existing python-blog repos](#why-not-fork-one-of-the-python-blog-repos)
 2. [This Solution](#the-solution)
@@ -10,7 +10,7 @@ In this ReadMe we will be going through the following content
 I wanted to build a blog for publishing articles and some python programmes, thus, I may have a hard time using wordpress, which sounds like the simplest, in conjunction with my python codes. Why not fork one of the python-blog repos?
 After trying out alot of them, read more in the next section, none of them seems to solve my needs as stated below.
 
-The needs that call for the development of the app, is listed below. Obviously, if this are not the features you needed, you may simply jump to the next section to see other available options built by some brilliant people, in fact there are alot out there you can pick from, so feel free to explore alot of brilliant options out there depending on your needs.
+The needs that call for the development of the flask blog app, are listed below. Obviously, if this are not the features you needed, you may simply jump to the next section to see other available options built by some brilliant people, in fact there are alot out there you can pick from, so feel free to explore alot of other brilliant options out there depending on your needs.
 ### List of the requirements
 1. Support Postings by Many Users.
 2. Article should support tagging
@@ -24,7 +24,7 @@ The needs that call for the development of the app, is listed below. Obviously, 
 6. Posts should be written in markdown and I must be able to preview in real-time while editing. That is, I should be able open preview windows side-by-side with the markdown text-box.
 7. Articles must be searchable.
 8. Display related articles to the current article being read.
-9. Extendable for use in existing applications: Thus shhould be cotained in a blueprint to make things easy to whoever wants to port it into another application
+9. Extendable for use in existing applications: Thus should be cotained in a blueprint to make things easy to whoever wants to port it into another application
 10. Must be able to host some light-weight files, which may be linked to from in the blog posts
 
 
