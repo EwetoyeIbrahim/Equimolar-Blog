@@ -89,10 +89,10 @@ def show_tags():
     return render_template('equimolar/tags.html',
                         tags=tags)
 
-@equimolar_bp.route('/tag/<id>')
-def show_tag(id):
+@equimolar_bp.route('/tag/<tag_name>')
+def show_tag(tag_name):
     # Given a tag, all associated published posts are displayed
-    tag = Tag.query.get_or_404(id)
+    tag = Tag.query.filter_by(name=tag_name).first()
     articles = tag.articles.filter_by(draft=0).all()
     return render_template('equimolar/tag.html', tag=tag, entries=articles)
 
