@@ -14,13 +14,13 @@
     {% endif %}
     {% endwith %}
     <h1>{{ article.title }}</h1>
-    <h3><small>{{ article.summary }}</small></h3>
+    <p>{{ article.summary }}
     {% if can_edit(current_user, article.authour.first().username) %}
-        <button>
-            <a href="{{ url_for('equimolar_blog.writter', article_id=article.id) }}">
-            Edit this article</a>
-        </button>
+        <a href="{{ url_for('equimolar_blog.writter', article_id=article.id) }}">
+            <i class='material-icons'>edit</i>
+        </a>
     {% endif %}
+    </p>
     <hr>
     {{ article.html_content }}
 
@@ -30,6 +30,9 @@
             {{ article.authour.first().username }}
         </p>
     {% endif %}
+
+{% endblock %}
+{% block sidebar %}
     {% if article.tags %}
         {% for tag in article.tags %}
             <button class="btn btn-dark mt-2"><a href="/tag/{{ tag.name }}">
@@ -40,10 +43,8 @@
             </button>
         {% endfor %}
     {% endif %}
-
-{% endblock %}
-{% block sidebar %}
     {% if related_articles %}
+        <br>
         <p>Related Posts</p>
         {% for related in related_articles %}
             {% if related.title != article.title %}

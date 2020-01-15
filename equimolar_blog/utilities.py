@@ -80,6 +80,21 @@ def can_edit(current_user, authour):
             return True
     return False
 
+def can_create(current_user):
+    '''
+    Checks if the current logged-in user can create a post,
+    returns True if either user has an authour right or is an Editor,
+    It is also made a global jinja function as it is also used to
+    determine if an Edit button should be visible to the web user.
+    :param current_user: Flask-Security extended Flask-Login current
+                         user object
+    :type current_user: object
+    '''
+    if current_user.is_authenticated:
+        if (current_user.has_role('Editor')|current_user.has_role('Editor')):
+            return True
+    return False
+
 '''
 # These set of variable will called directly from templates
 app.jinja_env.globals['blog_date'] = blog_date

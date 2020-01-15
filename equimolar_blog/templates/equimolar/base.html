@@ -1,5 +1,5 @@
 <!Doctype html>
-<html lang='en'>
+<html lang='en' class="bg-secondary bg-light">
 <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
@@ -51,6 +51,7 @@
             </button>
           
             <div class='collapse navbar-collapse justify-content-end' id='navbarSupportedContent'>
+                
                 <form class='form-inline pr-1' action="{{ url_for('equimolar_blog.search') }}" method="POST">
                     <div class='input-group'>
                         <input type='text' class='form-control' placeholder='Search Equimolar'
@@ -64,8 +65,22 @@
                 </form>
                 <ul class='navbar-nav bg-secondary bg-light'>
                     <li class='nav-item'>
-                        <a class='nav-link' href='#'>About Me</a>
+                        <a class='nav-link' href='https://EwetoyeIbrahim.github.io'>About Me</a>
                     </li>
+                    <!-- Logout link will only be visible to all logged-in users-->
+                    {% if current_user.is_authenticated: %}
+                    <li class='nav-item'>
+                        <a class='nav-link' href="/logout">Logout</a>
+                    </li>
+                    {% endif %}
+                    <!-- Only Authours and Editors can create a new post-->
+                    {% if can_create(current_user) %}
+                    <li class='nav-item'>
+                        <a class='nav-link' href="/writter">
+                            <span><i class='material-icons'>add</i>New Post</span>
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
               
             </div>
@@ -74,20 +89,25 @@
         
         <div class='container-fluid bg-secondary bg-light'>
             <div class='row pt-4 mt-2'>
-                <div class='container col-lg-9 mt-5 pt-4'>
+                <div class='col-lg-9 mt-5 pt-4'>
                     {% block main %}
                     {% endblock main %}
                 </div>
-                <span class='border-left'></span>
-                <nav class='col-lg-2 bg-secondary bg-light' aria-label='Secondary navigation'>
-                    <div class="pt-5">
-                        <hr>
-                        <img class='mx-auto d-block'
-                            alt='advert banner' src='../static/Images/ads0.jpg'>
-                        <hr>
+                
+                <nav class='col-lg-3' aria-label='Main navigation'>
+                    <div class="container card">
+                        <div class="pt-5 pb-2">
+                            <div class="card">
+                                <img class='card-img-top mx-auto d-block'
+                                    alt='advert banner' src='http://localhost:5000/static/uploaded_files/ads1.jpg'>
+                                <div class="card-body">
+                                    <p class="card-text">Advertise your product here</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% block sidebar %}
+                        {% endblock sidebar %}
                     </div>
-                    {% block sidebar %}
-                    {% endblock sidebar %}
                 </nav>
             </div>
         </div>

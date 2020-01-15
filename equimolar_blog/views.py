@@ -7,7 +7,8 @@ from flask_security import Security, SQLAlchemyUserDatastore, \
     login_required, login_user, logout_user, current_user
 from equimolar_blog import db, Article, Tag, User, Role
 from .forms import ArticleForm, RegistrationForm
-from .utilities import blog_date, split_article, update_article, can_edit
+from .utilities import blog_date, split_article, update_article, \
+    can_edit, can_create
 
 # Declaring the blueprints ------------------------------------------
 
@@ -15,6 +16,7 @@ equimolar_bp = Blueprint('equimolar_blog', __name__)
 # Template accessible variables
 equimolar_bp.add_app_template_global(blog_date)
 equimolar_bp.add_app_template_global(can_edit)
+equimolar_bp.add_app_template_global(can_create)
 
 # -------- Error Handlers --------------------------------------------
 @equimolar_bp.errorhandler(404)

@@ -14,11 +14,11 @@
 
     {%- for entry in pagination.items %}
         {% if drafts %}
-            <h1>
+            <h2>
                 <a href='/draft?slug={{ entry.slug }}'>{{ entry.title }}</a>
-            </h1>
+            </h2>
         {% else %}
-            <h1><a href='/{{ entry.slug }}'>{{ entry.title }}</a></h1>
+            <h2><a href='/{{ entry.slug }}'>{{ entry.title }}</a></h2>
         {% endif %}
         {% if entry.summary %}
             <p>{{ entry.summary }} 
