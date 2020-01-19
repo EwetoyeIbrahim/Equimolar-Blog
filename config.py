@@ -34,6 +34,19 @@ class Config:
                                     'pdf', 'doc', 'docx', 'xls', 'xlsx',
                                     ]
     
+    # -------- Facebook Comment ---------------------------
+    '''
+    Facebook comment will only be put to use if FACEBOOK_COMMENT is set
+    to True. All the attributes declared here are as documented in facebook
+    just prefixed with FB_
+    '''
+    FACEBOOK_COMMENT = False
+    FB_DATA_COLORSCHEME = 'light' # ligth|dark
+    FB_DATA_NUMPOSTS = '20'
+    FB_DATA_ORDER_BY = 'social' # social|time|reverse_time
+    FB_DATA_WIDTH = '100%'
+    
+    
 class DevelopmentConfig(Config):
         # ---------------- Database ----------------------------------
     SQLALCHEMY_DATABASE_URI = 'sqlite:///test5.db'
@@ -59,10 +72,10 @@ class ProductionConfig(Config):
     # ---------------- Database ----------------------------------
     SQLALCHEMY_DATABASE_URI = os.environ.get('PRODUCTION_DB_URI') or \
                                 'sqlite:///equimolar.db'
+    FACEBOOK_COMMENT = True
 
 config = {
     'development': DevelopmentConfig,
     'production' : ProductionConfig,
-
     'default' : DevelopmentConfig,
 }

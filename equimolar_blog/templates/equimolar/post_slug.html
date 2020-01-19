@@ -31,6 +31,21 @@
         </p>
     {% endif %}
 
+    {% if config.FACEBOOK_COMMENT %}
+        <!-- Facebook JavaScript SDK -->
+        <div id="fb-root"></div>
+        <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v5.0"></script>
+        {{ request.url }}
+        <!-- Where the plugin will appear-->
+        <div class="fb-comments"
+            data-href = {{ request.url }}
+            data-colorscheme = {{ config.FB_DATA_COLORSCHEME }}
+            data-numposts = {{ config.FB_DATA_NUMPOSTS }}
+            data_order-by = {{ config.FB_DATA_ORDER_BY }}
+            data-width = {{ config.FB_DATA_WIDTH }}>
+        </div>
+    {% endif %}
+
 {% endblock %}
 {% block sidebar %}
     {% if article.tags %}
