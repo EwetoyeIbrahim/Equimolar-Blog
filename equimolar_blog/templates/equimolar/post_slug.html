@@ -1,6 +1,13 @@
 {% extends 'equimolar/base.html' %}
 {% block meta %}
     {% include "equimolar/metatags.html" %}
+    {% if config.FACEBOOK_COMMENT_APPID %}
+        <meta property="fb:app_id" content="{{ config.FACEBOOK_COMMENT_APPID }}" />
+    {% endif %}
+    <meta property="og:url" content="{{ request.url }}" />
+    <meta property="og:title" content="{{ article.title }}" />
+    <meta property="og:description" content="{{ article.summary }}" />
+    <meta property="og:image" content="Equimolar.com" />
 {% endblock meta %}
 {% block title %}
     {{ article.title }}
@@ -26,23 +33,32 @@
 
     {% if article.last_mod_date %}
         <p>
-            Last modified on {{ blog_date(article.last_mod_date) }} by 
+            Last modified on {{ blog_date(article.last_mod_date) }} by
             {{ article.authour.first().username }}
         </p>
     {% endif %}
 
     {% if config.FACEBOOK_COMMENT %}
         <!-- Facebook JavaScript SDK -->
-        <div id="fb-root"></div>
-        <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v5.0"></script>
-        {{ request.url }}
-        <!-- Where the plugin will appear-->
-        <div class="fb-comments"
-            data-href = {{ request.url }}
-            data-colorscheme = {{ config.FB_DATA_COLORSCHEME }}
-            data-numposts = {{ config.FB_DATA_NUMPOSTS }}
-            data_order-by = {{ config.FB_DATA_ORDER_BY }}
-            data-width = {{ config.FB_DATA_WIDTH }}>
+        <div class='row col-12'>
+
+            <!--Facebook Comment script-->
+            <div id="fb-root"></div>
+            <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v6.0"></script>
+            <!-- Where the plugin will appear-->
+            <div
+              class="fb-like"
+              data-share="true"
+              data-width="450"
+              data-show-faces="true">
+            </div>
+            <div class="fb-comments"
+                data-href = "{{ request.url }}"
+                data-colorscheme = "{{ config.FB_DATA_COLORSCHEME }}"
+                data-numposts = "{{ config.FB_DATA_NUMPOSTS }}"
+                data_order-by = "{{ config.FB_DATA_ORDER_BY }}"
+                data-width = "{{ config.FB_DATA_WIDTH }}">
+            </div>
         </div>
     {% endif %}
 

@@ -1,20 +1,21 @@
 import os
 
 class Config:
-    
+
     # -------- Some Site Configurations -------------------------------
-    SITE_KEYWORDS = ['Data Analysis', 'Nigerian Data', 'Data Dashboard']
+    SITE_KEYWORDS = ['Data Analysis', 'African Data', 'Nigerian Data', 'Data Dashboard']
     SITE_NAME = 'Equimolar'
+    ABOUT_LINK = 'https://ewetoyeibrahim.github.io/'
 
     # --- Some Flask Stuffs -------
     SECRET_KEY = os.urandom(32)
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
 
     # ---------------- Flask Security ----------------------------
     SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
     SECURITY_PASSWORD_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
-        
+
     # -------- Flask FileUpload ---------------------------
     '''
     The aim is to host just as few files as possible,
@@ -33,38 +34,23 @@ class Config:
                                     '3gp', 'mp3', 'mp4',
                                     'pdf', 'doc', 'docx', 'xls', 'xlsx',
                                     ]
-    
+
     # -------- Facebook Comment ---------------------------
     '''
     Facebook comment will only be put to use if FACEBOOK_COMMENT is set
     to True. All the attributes declared here are as documented in facebook
     just prefixed with FB_
     '''
-    FACEBOOK_COMMENT = False
+    FACEBOOK_COMMENT = True
     FB_DATA_COLORSCHEME = 'light' # ligth|dark
     FB_DATA_NUMPOSTS = '20'
     FB_DATA_ORDER_BY = 'social' # social|time|reverse_time
-    FB_DATA_WIDTH = '100%'
-    
-    
+    #FB_DATA_WIDTH = '100%' # Facebook 100% not working reliably
+
+
 class DevelopmentConfig(Config):
         # ---------------- Database ----------------------------------
     SQLALCHEMY_DATABASE_URI = 'sqlite:///test5.db'
-    # ---------------- Flask Mial -------------------------
-    '''
-    Flask-Security optionally sends email notification to users upon
-    registration, password reset, etc. It uses Flask-Mail behind the scenes.
-    Set mail-related config values.
-    Replace this with your own 'from' address
-    '''
-    SECURITY_EMAIL_SENDER = 'admin@gmail.com'
-    # Replace the next five lines with your own SMTP server settings
-    MAIL_SERVER = 'smtp.gmail.com'
-    MAIL_PORT = 465
-    MAIL_USE_SSL = True
-    MAIL_USERNAME = 'admin@gmail.com'
-    MAIL_PASSWORD = 'password'
-
     #------ Debug during development ----------
     DEBUG = True
 
@@ -72,7 +58,9 @@ class ProductionConfig(Config):
     # ---------------- Database ----------------------------------
     SQLALCHEMY_DATABASE_URI = os.environ.get('PRODUCTION_DB_URI') or \
                                 'sqlite:///equimolar.db'
-    FACEBOOK_COMMENT = True
+    #to enable debug mode, simply uncomment and provide the app id below
+    #FACEBOOK_COMMENT_APPID = 'Your___App____Id'
+    DEBUG = False
 
 config = {
     'development': DevelopmentConfig,

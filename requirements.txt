@@ -1,0 +1,15 @@
+Flask==1.1.1
+Flask-Admin==1.5.4
+Flask-FileUpload==0.5.0
+Flask-Login==0.4.1
+Flask-Security==3.0.0
+Flask-SQLAlchemy==2.4.1
+flask-whooshalchemy3==0.1.2
+Flask-WTF==0.14.3
+Markdown==3.1.1
+MarkupSafe==1.1.1
+Pygments==2.3.1
+python-slugify==4.0.0
+requests==2.21.0
+SQLAlchemy==1.1.13
+werkzeug==0.16.1

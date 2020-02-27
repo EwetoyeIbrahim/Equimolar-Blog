@@ -13,11 +13,11 @@
     <!-- Google font icons-->
     <link href='https://fonts.googleapis.com/icon?family=Material+Icons' rel='stylesheet'>
     <!-- Custom CSS for Jupyter Notebooks Markdowns -->
-    <link rel='stylesheet' href='../static/custom-css/colorful.css'>
+    <link rel='stylesheet' href='../static/Custom-CSS/colorful.css'>
     <!-- Custom CSS for equimolar blog-->
-    <link rel='stylesheet' href='../static/custom-css/equimolar_blog.css'>
-    
-    
+    <link rel='stylesheet' href='../static/Custom-CSS/equimolar_blog.css'>
+
+
     <!-- Other page specific stylesheets -->
     {% block extrastyle %}
     {% endblock extrastyle %}
@@ -28,7 +28,7 @@
             After wasting several hours I noticed that my rich markdown editor
             would use its resources if not assign as very early before the form
             gets rendered, thus the need for this block
-        -->  
+        -->
     {% endblock urgent_scripts %}
 
     <title>
@@ -38,7 +38,7 @@
 </head>
 <body>
     <div>
-        
+
         <nav class='navbar fixed-top navbar-expand-sm navbar-light bg-dark'>
             <a class='navbar-brand' href='/'><strong style="color: white; font-size: 28px">
                 {{ config.SITE_NAME }}</strong>
@@ -49,9 +49,9 @@
                 aria-expanded='false' aria-label='Toggle navigation'>
                 <span class='navbar-toggler-icon'></span>
             </button>
-          
+
             <div class='collapse navbar-collapse justify-content-end' id='navbarSupportedContent'>
-                
+
                 <form class='form-inline pr-1' action="{{ url_for('equimolar_blog.search') }}" method="POST">
                     <div class='input-group'>
                         <input type='text' class='form-control' placeholder='Search Equimolar'
@@ -65,7 +65,7 @@
                 </form>
                 <ul class='navbar-nav bg-secondary bg-light'>
                     <li class='nav-item'>
-                        <a class='nav-link' href='https://EwetoyeIbrahim.github.io'>About Me</a>
+                        <a class='nav-link' href='{{ config.ABOUT_LINK }}'>About</a>
                     </li>
                     <!-- Logout link will only be visible to all logged-in users-->
                     {% if current_user.is_authenticated: %}
@@ -77,29 +77,29 @@
                     {% if can_create(current_user) %}
                     <li class='nav-item'>
                         <a class='nav-link' href="/writter">
-                            <span><i class='material-icons'>add</i>New Post</span>
+                            <span><i class="small material-icons" style="vertical-align: top;" >add</i>New</span>
                         </a>
                     </li>
                     {% endif %}
                 </ul>
-              
+
             </div>
             {% endblock nav_stuffs %}
         </nav>
-        
+
         <div class='container-fluid bg-secondary bg-light'>
             <div class='row pt-4 mt-2'>
                 <div class='col-lg-9 mt-5 pt-4'>
                     {% block main %}
                     {% endblock main %}
                 </div>
-                
+
                 <nav class='col-lg-3' aria-label='Main navigation'>
                     <div class="container card">
                         <div class="pt-5 pb-2">
                             <div class="card">
                                 <img class='card-img-top mx-auto d-block'
-                                    alt='advert banner' src='http://localhost:5000/static/uploaded_files/ads1.jpg'>
+                                    alt='advert banner' src='../static/uploaded_files/ads1.jpg'>
                                 <div class="card-body">
                                     <p class="card-text">Advertise your product here</p>
                                 </div>
@@ -112,7 +112,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Bootstrap Documentation JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src='https://code.jquery.com/jquery-3.4.1.slim.min.js' integrity='sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n' crossorigin='anonymous'></script>
