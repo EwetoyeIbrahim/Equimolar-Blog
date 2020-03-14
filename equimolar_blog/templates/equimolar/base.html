@@ -64,9 +64,11 @@
                     </div>
                 </form>
                 <ul class='navbar-nav bg-secondary bg-light'>
+                    {% if config.ABOUT_LINK %}
                     <li class='nav-item'>
                         <a class='nav-link' href='{{ config.ABOUT_LINK }}'>About</a>
                     </li>
+                    {% endif %}
                     <!-- Logout link will only be visible to all logged-in users-->
                     {% if current_user.is_authenticated: %}
                     <li class='nav-item'>
