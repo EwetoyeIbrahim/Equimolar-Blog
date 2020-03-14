@@ -1,4 +1,11 @@
 {% extends 'equimolar/base.html' %}
+{% if config.SITE_DESCRIPTION %}
+    {% block meta %}
+        <meta name="description" content="{{ config.SITE_DESCRIPTION }}">
+    {% endblock meta %}
+    {% else %}
+        <meta name="description" content="{{ config.SITE_NAME }} home page">
+{% endif %}
 {% block title %}
     {{ config.SITE_NAME }}
 {% endblock %}

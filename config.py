@@ -4,6 +4,7 @@ class Config:
 
     # -------- Some Site Configurations -------------------------------
     SITE_KEYWORDS = ['Data Analysis', 'African Data', 'Nigerian Data', 'Data Dashboard']
+    SITE_DESCRIPTION = "" # Short meta description of the homepage
     SITE_NAME = 'Equimolar'
     ABOUT_LINK = 'https://ewetoyeibrahim.github.io/'
 
@@ -34,7 +35,7 @@ class Config:
                                     '3gp', 'mp3', 'mp4',
                                     'pdf', 'doc', 'docx', 'xls', 'xlsx',
                                     ]
-
+    
     # -------- Facebook Comment ---------------------------
     '''
     Facebook comment will only be put to use if FACEBOOK_COMMENT is set
@@ -49,7 +50,7 @@ class Config:
 
 
 class DevelopmentConfig(Config):
-        # ---------------- Database ----------------------------------
+    # ---------------- Database ----------------------------------
     SQLALCHEMY_DATABASE_URI = 'sqlite:///test5.db'
     #------ Debug during development ----------
     DEBUG = True
@@ -60,7 +61,7 @@ class ProductionConfig(Config):
                                 'sqlite:///equimolar.db'
     #to enable debug mode, simply uncomment and provide the app id below
     #FACEBOOK_COMMENT_APPID = 'Your___App____Id'
-    DEBUG = False
+    DEBUG = True
 
 config = {
     'development': DevelopmentConfig,
