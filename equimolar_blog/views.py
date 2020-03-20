@@ -1,8 +1,8 @@
 from datetime import datetime
-import json
+import json, os, uuid
 
 from flask import render_template, request, abort, redirect, \
-    url_for, flash, Blueprint
+    url_for, flash, Blueprint, current_app
 from flask_security import Security, SQLAlchemyUserDatastore, \
     login_required, login_user, logout_user, current_user
 from equimolar_blog import db, Article, Tag, User, Role
@@ -58,7 +58,7 @@ def register():
         return render_template('equimolar/register.html', title='Register',
                                 form=form)
     flash('''Sorry, only users that has been given the Registrar role 
-        can register a new user, Kindly contact Ewetoye Ibrahim for
+        can register a new user. Kindly contact Ewetoye Ibrahim for
         rectification. You have been logged-out!!!.''', 'error')
     logout_user()
     return redirect(url_for('register'))
@@ -169,7 +169,7 @@ def writter():
         return redirect(url_for('.writter'))
 
     flash('''Sorry, only users that has been given either Authour or Editor
-            permissions can create or edit a post, Kindly contact the Admin
+            permissions can create or edit a post. Kindly contact the Admin
             for rectification. You have been logged-out!!!.''', 'error')
     logout_user()
     return redirect(url_for('.writter'))
@@ -193,20 +193,48 @@ def search():
 @equimolar_bp.route('/draft')
 @login_required
 def drafts():
-    slug=request.args.get('slug',None)
-    draft_article = Article.in_draft()
-    if slug:
-        article = draft_article.filter_by(slug=slug).first()
-        if article==None: abort(404)
-        # Getting the related articles based on tags,
-        tag_names = [x.name for x in article.tags]
-        related = draft_article.filter(
-                    Article.tags.any(Tag.name.in_(tag_names))).order_by(
-                    Article.last_mod_date.desc()).limit(11).all() 
-        return render_template('equimolar/post_slug.html',
-                            article = article, related_articles = related)
     
-    pagination = draft_article.order_by( Article.last_mod_date.desc()).paginate(1)
-    return render_template('equimolar/index.html',
-                        pagination=pagination, drafts=True)
+    if can_create(current_user):
+    
+        slug=request.args.get('slug',None)
+        draft_article = Article.in_draft()
+        if slug:
+            article = draft_article.filter_by(slug=slug).first()
+            if article==None: abort(404)
+            # Getting the related articles based on tags,
+            tag_names = [x.name for x in article.tags]
+            related = draft_article.filter(
+                        Article.tags.any(Tag.name.in_(tag_names))).order_by(
+                        Article.last_mod_date.desc()).limit(11).all() 
+            return render_template('equimolar/post_slug.html',
+                                article = article, related_articles = related)
 
+        pagination = draft_article.order_by( Article.last_mod_date.desc()).paginate(1)
+        return render_template('equimolar/index.html',
+                            pagination=pagination, drafts=True)
+    flash('''Sorry, only users that has been given either Authour or Editor
+            permissions can see posts in draft. Kindly contact the Admin
+            for rectification. You have been logged-out!!!.''', 'error')
+    logout_user()
+    return redirect(url_for('.index'))
+
+# Not yet in use -------------------------------
+@equimolar_bp.route('/featured_images', methods=['POST'])
+def featured_image():
+    # To be used later for uploading and assigning featured images
+    if request.method == 'POST':
+        file = request.files['file']
+        extension = os.path.splitext(file.filename)[1]
+        # Only allow extensions in FEATURED_IMG_EXTENSIONS list in config
+        print(extension)
+        if extension.lower()[1:] in current_app.config['FEATURED_IMG_EXTENSIONS']:
+            f_name = str(uuid.uuid4()) + extension
+            featured_storage = current_app.config['EXT_FEATURED_IMG_PATH'] or 'Local'
+            print(featured_storage)
+            if featured_storage == 'Local':
+                featured_storage = os.path.join(os.path.abspath(
+                    os.path.dirname(__file__)),'static/featured_images')
+            file.save(os.path.join(featured_storage, f_name))
+            return json.dumps({'filename':f_name})
+        return json.dumps({'Error':f'''Allowed featured image filetypes are {
+            current_app.config['FEATURED_IMG_EXTENSIONS']}'''})

@@ -78,8 +78,11 @@
                         <a class='nav-link' href="/logout">Logout</a>
                     </li>
                     {% endif %}
-                    <!-- Only Authours and Editors can create a new post-->
+                    <!-- Only Authours and Editors can create a new post and see drafts-->
                     {% if can_create(current_user) %}
+                    <li class='nav-item'>
+                        <a class='nav-link' href="/draft">Draft</a>
+                    </li>
                     <li class='nav-item'>
                         <a class='nav-link' href="/writter">
                             <span><i class="small material-icons" style="vertical-align: top;" >add</i>New</span>
