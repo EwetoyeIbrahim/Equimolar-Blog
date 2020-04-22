@@ -28,12 +28,12 @@
             <h2><a href='/{{ entry.slug }}'>{{ entry.title }}</a></h2>
         {% endif %}
         {% if entry.summary %}
-            <p>{{ entry.summary }} 
+            <p>{{ entry.summary }}
                 | Last Modified: {{ blog_date(entry.last_mod_date) }}
             </p>
         {% endif %}
         <hr>
     {%- endfor %}
 
-    {% include 'equimolar/_pagination.html' %}
+    {% include 'equimolar/paginationStyle1_Secondary.html' %}
 {% endblock %}

@@ -37,9 +37,10 @@ def internal_server_error(error):
 
 # -------- Endpoints -------------------------------------------------
 @equimolar_bp.route('/')
-def index():
+@equimolar_bp.route('/page/<int:page>')
+def index(page=1):
     pub_article = Article.public()
-    pagination = pub_article.order_by(Article.last_mod_date.desc()).paginate(1)
+    pagination = pub_article.order_by(Article.last_mod_date.desc()).paginate(page, per_page=50)
     return render_template('equimolar/index.html',
                         pagination=pagination)
 
@@ -57,7 +58,7 @@ def register():
             return redirect(url_for('index'))
         return render_template('equimolar/register.html', title='Register',
                                 form=form)
-    flash('''Sorry, only users that has been given the Registrar role 
+    flash('''Sorry, only users that has been given the Registrar role
         can register a new user. Kindly contact Ewetoye Ibrahim for
         rectification. You have been logged-out!!!.''', 'error')
     logout_user()
@@ -80,7 +81,7 @@ def show_article(slug):
     tag_names = [x.name for x in article.tags]
     related = pub_article.filter(
                 Article.tags.any(Tag.name.in_(tag_names))).order_by(
-                Article.last_mod_date.desc()).limit(6).all()  
+                Article.last_mod_date.desc()).limit(6).all()
     return render_template('equimolar/post_slug.html',
                             article = article, related_articles = related)
 
@@ -95,8 +96,11 @@ def show_tags():
 def show_tag(tag_name):
     # Given a tag, all associated published posts are displayed
     tag = Tag.query.filter_by(name=tag_name).first()
-    articles = tag.articles.filter_by(draft=0).all()
-    return render_template('equimolar/tag.html', tag=tag, entries=articles)
+    if tag is not None:
+        articles = tag.articles.filter_by(draft=0).all()
+        return render_template('equimolar/tag.html', tag=tag, entries=articles)
+    flash('Tag not found', 'error')
+    return redirect(url_for('.index'))
 
 
 @equimolar_bp.route('/writter/', methods=['GET', 'POST'])
@@ -110,11 +114,11 @@ def writter():
     clicking on edit this post button which is only visible if the user is
     logged in and posses an authour right, the user is presented a form
     with the provided article_id information for editing.
-    
+
     :param article_id: An optional query for editing an already published post
     :type article_id: str
     '''
-    
+
     if (current_user.has_role('Authour') or current_user.has_role('Editor')) :
         article_id = request.args.get('article_id',None)
         form = ArticleForm()
@@ -127,7 +131,7 @@ def writter():
                 # an Exception will only be raised if the post is not assigned to a
                 # user, thus in case of any Exception, only an Editor is permitted.
                 if not current_user.has_role('Editor'): editable = False
-        if editable:     
+        if editable:
             if request.method == 'POST':
                 usname = User.query.filter_by(username=current_user.username)
                 if article_:
@@ -144,7 +148,7 @@ def writter():
                     )
 
                 list_tags = [x.strip() for x in form.tags.data.split(',')]
-                for x in list_tags:                                             
+                for x in list_tags:
                     new_tag = Tag.query.filter(Tag.name==x).first()
                     if new_tag is None:
                         new_tag = Tag(name=x)
@@ -189,13 +193,13 @@ def search():
         return render_template('equimolar/index.html', pagination=results)
     flash('No result found', 'error')
     return redirect(url_for('.index'))
-    
+
 @equimolar_bp.route('/draft')
 @login_required
 def drafts():
-    
+
     if can_create(current_user):
-    
+
         slug=request.args.get('slug',None)
         draft_article = Article.in_draft()
         if slug:
@@ -205,7 +209,7 @@ def drafts():
             tag_names = [x.name for x in article.tags]
             related = draft_article.filter(
                         Article.tags.any(Tag.name.in_(tag_names))).order_by(
-                        Article.last_mod_date.desc()).limit(11).all() 
+                        Article.last_mod_date.desc()).limit(11).all()
             return render_template('equimolar/post_slug.html',
                                 article = article, related_articles = related)
 

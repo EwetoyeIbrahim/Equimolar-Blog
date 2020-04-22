@@ -1,0 +1,57 @@
+<!-- Source: https://github.com/EwetoyeIbrahim/Paginations-Jinja2-Bootstrap-Templates/blob/master/paginationStyle1_Secondary.html -->
+
+<!--    1 2 ... 3000                for page 1
+        1 2 3 ... 3000              for page 2
+        1 2 3 4 ... 3000            for page 3
+        1 ... 95 96 97 ... 3000     for page 96
+        1 ... 2997 2998 2999 3000   for page 2998
+        1 ... 2998 2999 3000        for page 2999
+        1 ... 2999 3000             for page 3000
+-->
+
+<ul class="list-inline">
+    <!-- 1 and previous page; the current page -->
+    {% if pagination.has_prev %}
+        <!-- Always display the first page -->
+        <li class="list-inline-item btn-sm btn-secondary" >
+            <a class="text-light" href="{{ url_for('equimolar_blog.index', page=1) }}">1</a>
+        </li>
+        {% if pagination.prev_num > 2 %}
+            <li class="list-inline-item" >
+                <span>…</span>
+            </li>
+        {% endif %}
+        {% if pagination.prev_num > 1 %}
+            <li class="list-inline-item btn-sm btn-secondary" >
+                <a class="text-light" href="{{ url_for('equimolar_blog.index', page=pagination.prev_num) }}">{{pagination.prev_num}}</a>
+            </li>
+        {% endif %}
+        <li class="list-inline-item btn-sm btn-secondary active">
+            <a class="text-light" href="#">{{ pagination.page }}</a>
+        </li>
+    {% else %}
+        <li class="list-inline-item btn-sm btn-secondary active" >
+            <a class="text-light" href="{{ url_for('equimolar_blog.index', page=pagination.page) }}">{{pagination.page}}</a>
+        </li>
+    {% endif %}
+
+    <!-- next page; ellipses; last page -->
+    {% if pagination.has_next %}
+        <li class="list-inline-item btn-sm btn-secondary" >
+            <a class="text-light" href="{{ url_for('equimolar_blog.index', page=pagination.next_num) }}">{{pagination.next_num}}</a>
+        </li>
+
+        {% if (pagination.pages - pagination.next_num) > 2 %}
+            <li class="list-inline-item" >
+                <span>…</span>
+            </li>
+        {% endif %}
+        {% if (pagination.pages - pagination.next_num) >= 1 %}
+        <li class="list-inline-item btn-sm btn-secondary" >
+            <a class="text-light" href="{{ url_for('equimolar_blog.index', page=pagination.pages) }}">{{pagination.pages}}</a>
+        </li>
+        {% endif %}
+
+    {% endif %}
+
+</ul>
