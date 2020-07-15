@@ -35,7 +35,7 @@ class Config:
                                     '3gp', 'mp3', 'mp4',
                                     'pdf', 'doc', 'docx', 'xls', 'xlsx',
                                     ]
-    
+
     # -------- Facebook Comment ---------------------------
     '''
     Facebook comment will only be put to use if FACEBOOK_COMMENT is set
@@ -46,7 +46,7 @@ class Config:
     FB_DATA_COLORSCHEME = 'light' # ligth|dark
     FB_DATA_NUMPOSTS = '20'
     FB_DATA_ORDER_BY = 'social' # social|time|reverse_time
-    #FB_DATA_WIDTH = '100%' # Facebook 100% not working reliably
+    #FB_DATA_WIDTH = '100%' # Moved to template
 
 
 class DevelopmentConfig(Config):

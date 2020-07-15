@@ -66,25 +66,25 @@
                         </div>
                     </div>
                 </form>
-                <ul class='navbar-nav bg-secondary bg-light'>
+                <ul class='navbar-nav'>
                     {% if config.ABOUT_LINK %}
-                    <li class='nav-item'>
-                        <a class='nav-link' href='{{ config.ABOUT_LINK }}'>About</a>
+                    <li class='nav-item m-1'>
+                        <a class='nav-link btn btn-md btn-secondary btn-light' href='{{ config.ABOUT_LINK }}'>About</a>
                     </li>
                     {% endif %}
                     <!-- Logout link will only be visible to all logged-in users-->
                     {% if current_user.is_authenticated: %}
-                    <li class='nav-item'>
-                        <a class='nav-link' href="/logout">Logout</a>
+                    <li class='nav-item m-1'>
+                        <a class='nav-link btn btn-md btn-secondary btn-light' href="/logout">Logout</a>
                     </li>
                     {% endif %}
                     <!-- Only Authours and Editors can create a new post and see drafts-->
                     {% if can_create(current_user) %}
-                    <li class='nav-item'>
-                        <a class='nav-link' href="/draft">Draft</a>
+                    <li class='nav-item m-1'>
+                        <a class='nav-link btn btn-md btn-secondary btn-light' href="/draft">Draft</a>
                     </li>
-                    <li class='nav-item'>
-                        <a class='nav-link' href="/writter">
+                    <li class='nav-item m-1'>
+                        <a class='nav-link btn btn-md btn-secondary btn-light' href="/writter">
                             <span><i class="small material-icons" style="vertical-align: top;" >add</i>New</span>
                         </a>
                     </li>
