@@ -95,13 +95,14 @@
             {% endblock nav_stuffs %}
         </nav>
 
-        <div class='container-fluid bg-secondary bg-light'>
+        <div class='container-fluid'>
             <div class='row pt-4 mt-2'>
                 <div class='col-lg-9 mt-5 pt-4'>
-                    {% block main %}
-                    {% endblock main %}
+		    <div class='container'>
+			{% block main %}
+                        {% endblock main %}
+		    </div>
                 </div>
-
                 <nav class='col-lg-3' aria-label='Main navigation'>
                     <div class="container card">
                         <div class="pt-5 pb-2">
