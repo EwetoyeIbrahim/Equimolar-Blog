@@ -36,7 +36,7 @@ passlib==1.7.2
 pbr==3.1.1
 pep517==0.8.2
 progress==1.5
-Pygments==2.7.1
+Pygments==2.7.4
 pyparsing==2.4.6
 python-slugify==4.0.1
 pytoml==0.1.21
